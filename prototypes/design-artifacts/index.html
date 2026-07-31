@@ -4,186 +4,169 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prototype — design artifacts at three scales</title>
+<!--
+  PROTOTYPE (wayfinder ticket #14).
+  Follows the HumanLayer design-doc family:
+    - Product side   : .opencode/skills/create-prd  (Problem / Success / Solution / Out of Scope)
+    - Technical side : .opencode/skills/create-tdd  (System Design / Program Design /
+                                                      What We're Not Doing / Patterns to Follow)
+  Visual language borrowed from create-tdd/references/artifact_template.html (poimandres dark).
+-->
 <style>
+  @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
+
   :root {
-    --accent: #4f46e5;
-    --accent-soft: #eef2ff;
-    --ink: #1e2430;
-    --muted: #5b6472;
-    --line: #e5e8ee;
-    --paper: #ffffff;
-    --chip-product: #0d9488;
-    --chip-product-bg: #f0fdfa;
-    --chip-technical: #4f46e5;
-    --chip-technical-bg: #eef2ff;
-    --chip-effort: #64748b;
-    --chip-effort-bg: #f1f5f9;
-    --chip-layer: #b45309;
-    --chip-layer-bg: #fffbeb;
+    --bg: #1b1e28; --bg-deep: #171922; --bg-alt: #303340;
+    --border: #303340; --guide: #303340;
+    --text: #a6accd; --bright: #ffffff;
+    --muted: rgba(166, 172, 205, 0.55);
+    --accent: #add7ff; --accent-dim: rgba(173, 215, 255, 0.3);
+    --mint: #5de4c7; --yellow: #fffac2; --blue: #89ddff;
+    --rose: #d0679d; --pink: #f087bd;
+    --mono: "IBM Plex Mono", Consolas, Monaco, "Courier New", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
-  * { box-sizing: border-box; }
+
+  * { box-sizing: border-box; border-radius: 0; }
+  ::selection { background: #717cb425; }
   body {
-    margin: 0;
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--ink);
-    background: #fafbfc;
-    line-height: 1.55;
+    background: var(--bg); color: var(--text); font-family: var(--sans);
+    margin: 0; padding: 26px 22px 120px; font-size: 15px; font-weight: 300;
+    line-height: 1.7; letter-spacing: 0.03em; -webkit-font-smoothing: antialiased;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
   }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 24px 96px; }
+  .wrap { max-width: 1120px; margin: 0 auto; }
 
-  /* header */
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    letter-spacing: .08em;
-    font-weight: 700;
-    color: #b45309;
-    background: var(--chip-layer-bg);
-    border: 1px solid #fde68a;
-    border-radius: 999px;
-    padding: 4px 12px;
-    text-transform: uppercase;
-  }
-  h1 { font-size: 30px; line-height: 1.2; margin: 14px 0 8px; }
-  .sub { color: var(--muted); margin: 0 0 22px; font-size: 15px; }
-  blockquote {
-    margin: 0 0 14px;
-    padding: 14px 18px;
-    background: var(--accent-soft);
-    border-left: 4px solid var(--accent);
-    border-radius: 0 8px 8px 0;
-    font-size: 15px;
-  }
-  blockquote a { color: var(--accent); }
-  .assumption {
-    font-size: 13.5px;
-    color: var(--muted);
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin: 0 0 26px;
-  }
-  .assumption b { color: var(--ink); }
+  h1, h2, h3, h4 { color: var(--accent); font-weight: 600; line-height: 1.3; margin: 1.6em 0 0.5em; }
+  h1 { font-size: 24px; letter-spacing: -0.02em; margin-top: 0; }
+  h2 { font-size: 19px; letter-spacing: -0.02em; }
+  h3 { font-size: 16px; letter-spacing: -0.01em; }
+  h4 { font-size: 13px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 
-  h2 { font-size: 18px; margin: 0 0 12px; }
+  p { margin: 0 0 1em; max-width: 84ch; line-height: 1.9; }
+  strong, b { color: var(--bright); font-weight: 600; }
+  em { color: var(--text); font-style: italic; }
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  a:hover { color: var(--blue); }
+  ul, ol { margin: 0.5em 0 1em; padding-left: 1.6em; max-width: 84ch; }
+  li { margin: 0; line-height: 1.8; }
+  li + li { margin-top: 0.35em; }
+  li::marker { color: var(--muted); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
+
+  code { font-family: var(--mono); font-size: 0.875em; background: var(--bg-alt); padding: 0.1em 0.35em 0; letter-spacing: normal; }
+  pre {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.7; background: var(--bg-deep);
+    border: 1px solid var(--border); padding: 12px 14px; overflow-x: auto; color: var(--text);
+    margin: 0.8em 0; white-space: pre; tab-size: 2; letter-spacing: normal;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  pre.mermaid { background: var(--bg-deep); text-align: center; }
+  pre.diff-add, pre.diff-del { margin: 0.3em 0; }
+  pre.diff-add { border-color: rgba(93,228,199,0.35); }
+  pre.diff-del { border-color: rgba(208,103,157,0.35); }
+
+  blockquote { margin: 1em 0; padding: 2px 0 2px 16px; border-left: 2px solid var(--accent-dim); color: var(--muted); }
+
+  table { border-collapse: collapse; margin: 1em 0; font-size: 13px; width: 100%; }
+  th, td { border: 1px solid var(--border); padding: 7px 12px; text-align: left; vertical-align: top; }
+  th { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+
+  .card { border: 1px solid var(--border); background: var(--bg-deep); padding: 20px 24px; margin: 1em 0; }
+
+  .badge { display: inline-block; font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.08em; padding: 2px 6px; text-transform: uppercase; border: 1px solid; }
+  .b-accent   { color: var(--accent); border-color: var(--accent-dim);    background: rgba(173,215,255,0.1); }
+  .b-new      { color: var(--mint);   border-color: rgba(93,228,199,0.4);  background: rgba(93,228,199,0.1); }
+  .b-modified { color: var(--blue);   border-color: rgba(137,221,255,0.4); background: rgba(137,221,255,0.1); }
+  .b-note     { color: var(--rose);   border-color: rgba(208,103,157,0.4); background: rgba(208,103,157,0.1); }
+  .b-principle{ color: var(--pink);   border-color: rgba(240,135,189,0.4); background: rgba(240,135,189,0.1); }
+  .b-kept     { color: var(--text);   border-color: var(--border);         background: rgba(166,172,205,0.08); }
+  .b-removed  { color: var(--bg);     border-color: var(--rose);           background: var(--rose); }
+
+  .stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; }
+  .stat { background: var(--bg); border: 1px solid var(--border); padding: 8px 14px; font-family: var(--mono); font-size: 9.5px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.6; }
+  .stat b { display: block; font-size: 14px; font-weight: 500; color: var(--accent); text-transform: none; letter-spacing: 0; margin-bottom: 2px; }
+  .stat b.ok { color: var(--mint); }
+
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0.8em 0; }
+  @media (max-width: 900px) { .ba { grid-template-columns: 1fr; } }
+  .ba > div { min-width: 0; }
+  .ba .label { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 4px; text-transform: uppercase; }
+  .ba .before .label { color: var(--rose); }
+  .ba .after .label { color: var(--mint); }
+  .ba .before pre { border-color: rgba(208,103,157,0.35); }
+  .ba .after pre { border-color: rgba(93,228,199,0.35); }
+  .ba pre { margin: 0; }
+
+  /* page chrome */
+  .proto-badge {
+    display: inline-block; font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--yellow);
+    border: 1px solid rgba(255,250,194,0.4); background: rgba(255,250,194,0.08);
+    padding: 3px 8px; margin-bottom: 14px;
+  }
+  .question-box { margin: 1.2em 0; padding: 14px 18px; border: 1px solid var(--accent-dim); background: rgba(173,215,255,0.05); }
+  .question-box p { margin: 0; color: var(--text); }
+  .assumption { font-size: 13.5px; color: var(--muted); margin: 1em 0 1.6em; }
+  .assumption b { color: var(--bright); }
 
   /* ceremony strip */
-  .ceremony { margin-bottom: 30px; }
+  .ceremony { margin: 0 0 1.6em; }
   .ceremony-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .ceremony-card {
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px;
-  }
-  .ceremony-card .scale {
-    font-weight: 800;
-    font-size: 13px;
-    letter-spacing: .05em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .ceremony-card ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
-  .ceremony-card ul li { margin: 3px 0; }
-  .ceremony-card .recs { font-size: 13px; margin-top: 8px; color: var(--ink); }
-  .s-large .scale { color: #dc2626; }
-  .s-medium .scale { color: #d97706; }
-  .s-small .scale { color: #16a34a; }
+  @media (max-width: 760px) { .ceremony-grid { grid-template-columns: 1fr; } }
+  .ceremony-card { border: 1px solid var(--border); background: var(--bg-deep); padding: 14px 16px; }
+  .ceremony-card .scale { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .ceremony-card ul { margin: 6px 0 0; padding-left: 1.2em; font-size: 12.5px; }
+  .ceremony-card .recs { font-size: 12.5px; color: var(--bright); margin-top: 8px; }
+  .s-large .scale { color: var(--rose); }
+  .s-medium .scale { color: var(--yellow); }
+  .s-small .scale { color: var(--mint); }
 
   /* tabs */
-  .tabs-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tabs-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 18px; }
   .tab-btn {
-    font: inherit; font-size: 14px; font-weight: 600;
-    padding: 9px 14px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: #fff;
-    color: var(--muted);
-    cursor: pointer;
+    font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+    padding: 8px 13px; border: 1px solid var(--border); background: var(--bg-deep);
+    color: var(--muted); cursor: pointer; text-transform: uppercase;
   }
-  .tab-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tab-btn:hover { color: var(--text); border-color: var(--guide); }
+  .tab-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
   .tab-pane { display: none; }
   .tab-pane.active { display: block; animation: fade .18s ease; }
   @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 
-  /* state panel */
-  .state-panel {
-    display: flex; flex-wrap: wrap; gap: 8px;
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-bottom: 16px;
-    font-size: 13px;
-  }
-  .state-panel .kv { color: var(--muted); }
-  .state-panel .kv b { color: var(--ink); font-weight: 600; }
+  .proj-note { margin: 0 0 1.4em; color: var(--muted); font-size: 13.5px; }
+  .proj-note b { color: var(--bright); }
 
-  /* records */
-  .record {
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    margin-bottom: 18px;
-    overflow: hidden;
-  }
+  .record { border: 1px solid var(--border); background: var(--bg); margin: 1.4em 0; }
   .record-head {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--line);
-    background: #fff;
+    padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--bg-deep);
   }
-  .record-head h3 { font-size: 16px; margin: 0; }
-  .record-head .meta { font-size: 12px; color: var(--muted); }
-  .chip {
-    font-size: 11px; font-weight: 700; letter-spacing: .02em;
-    padding: 2px 9px; border-radius: 999px;
-  }
-  .chip-product { color: var(--chip-product); background: var(--chip-product-bg); }
-  .chip-technical { color: var(--chip-technical); background: var(--chip-technical-bg); }
-  .chip-effort { color: var(--chip-effort); background: var(--chip-effort-bg); }
-  .chip-layer { color: var(--chip-layer); background: var(--chip-layer-bg); }
-  .record-body { padding: 14px 18px 4px; }
-  .sec { margin-bottom: 16px; }
-  .sec h4 {
-    font-size: 12px; font-weight: 800;
-    letter-spacing: .08em; text-transform: uppercase;
-    color: var(--muted);
-    margin: 0 0 8px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .sec h4 .tag { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--chip-layer); font-size: 11px; }
-  .sec p { margin: 0 0 6px; font-size: 14px; }
-  .sec ul { margin: 0; padding-left: 20px; }
-  .sec li { font-size: 13.5px; margin: 4px 0; }
-  .sec li b { font-weight: 650; }
-  .delta table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .delta th, .delta td { text-align: left; padding: 6px 10px; border: 1px solid var(--line); }
-  .delta th { background: #f8fafc; font-weight: 700; }
-  .foot { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 10px; }
+  .record-head h3 { margin: 0; font-size: 15px; }
+  .record-head .meta { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+  .record-body { padding: 6px 22px 14px; }
 
-  .note {
-    background: #fffbeb; border: 1px solid #fde68a;
-    color: #92400e; border-radius: 8px;
-    font-size: 13px; padding: 10px 14px; margin: 14px 0;
-  }
-  @media (max-width: 720px) { .ceremony-grid { grid-template-columns: 1fr; } }
+  .takedown { margin: 1.6em 0 0.4em; color: var(--accent); font-size: 14px; letter-spacing: -0.01em; }
+  .sec-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin: 1.8em 0 0.6em; }
+
+  .foot { font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 2.4em; padding-top: 14px; }
+  .foot code { font-size: 11px; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <span class="badge">Prototype · throwaway · not production</span>
+  <span class="proto-badge">Prototype · throwaway · not production</span>
   <h1>Design artifacts at three scales</h1>
-  <p class="sub">A wayfinder prototype for <b>issue&nbsp;14 — Prototype design artifacts for representative projects</b> (part of the Decision&nbsp;Map #1, "Design a unified architecture-first engineering workflow").</p>
+  <p>Wayfinder prototype for <b>issue&nbsp;14 — Prototype design artifacts for representative projects</b> (part of Decision&nbsp;Map #1, "Design a unified architecture-first engineering workflow").</p>
 
-  <blockquote>
-    <b>Question this prototype answers:</b> Do the proposed problem/behavior and technical-design contracts (issues&nbsp;#5 and #15) produce <em>concise but sufficiently deep</em> tracker artifacts for (1)&nbsp;a <b>major Embedded&nbsp;C processor migration</b>, (2)&nbsp;a <b>medium Python tooling change</b>, and (3)&nbsp;a <b>smaller TypeScript/web change</b> — without irrelevant ceremony?
-  </blockquote>
+  <div class="question-box">
+    <p><b>Question this prototype answers:</b> Do the proposed problem/behavior and technical-design contracts produce <em>concise but sufficiently deep</em> tracker artifacts for (1)&nbsp;a <b>major Embedded&nbsp;C processor migration</b>, (2)&nbsp;a <b>medium Python tooling change</b>, and (3)&nbsp;a <b>smaller TypeScript/web change</b> — without irrelevant ceremony?</p>
+  </div>
 
   <div class="assumption">
-    <b>Prototype shape.</b> One self-contained page; the <em>radically different</em> structures being compared are the artifact sets themselves at the three ceremony levels (Small&nbsp;/&nbsp;Medium&nbsp;/&nbsp;Large). Each tab below is one representative project, rendered the way its tracker records would actually look. Content is fictional but realistic; judge the <em>shape and depth</em>, not the domain details. Read the README.md beside this file for the full info pack.
+    <b>Shape:</b> the design docs below follow the HumanLayer template family — the product side matches <b>create-prd</b> (Problem to Solve / Success / Solution / Out of Scope), the technical side matches <b>create-tdd</b> (System Design / Program Design / What We're Not Doing / Patterns to Follow), with the same visual language as the TDD artifact template. The <em>radically different</em> structures being compared are the artifact sets at the three ceremony levels. Domain content is fictional but realistic — judge <em>depth and shape</em>, not engineering accuracy. Full info pack in README.md.
   </div>
 
   <section class="ceremony">
@@ -191,29 +174,28 @@
     <div class="ceremony-grid">
       <div class="ceremony-card s-large">
         <div class="scale">Large</div>
-        <div class="recs"><b>3 records</b> — Effort root + Product&nbsp;Design + Technical&nbsp;Design</div>
+        <div class="recs"><b>3 records</b> — Effort root + Product Design (PRD) + Technical Design (TDD)</div>
         <ul>
-          <li>Separate <b>design:product</b> record (behavioral contract)</li>
-          <li>Technical Design with System + Program + <b>Transition</b> layers</li>
-          <li>Embedded profile lens, full depth</li>
+          <li>Full PRD + full TDD, both separate records</li>
+          <li>System + Program + migration plan inside the TDD, mermaid + signatures + seam maps</li>
           <li>Delivery tickets later, from approved intent</li>
         </ul>
       </div>
       <div class="ceremony-card s-medium">
         <div class="scale">Medium</div>
-        <div class="recs"><b>2 records</b> — Effort root (Product&nbsp;intent) + Technical&nbsp;Design</div>
+        <div class="recs"><b>2 records</b> — Effort root (Product intent) + Technical Design (TDD)</div>
         <ul>
-          <li>Product <b>intent</b> stays on the root (tooling, not interaction-rich)</li>
-          <li>Technical Design with System + Program + <b>thin</b> Transition (build behavior replaced)</li>
-          <li>Python profile lens</li>
+          <li>Product <b>intent</b> on root (tooling: not interaction-rich)</li>
+          <li>TDD with System + Program + thin migration plan</li>
+          <li>Fewer diagrams, same declarative form</li>
         </ul>
       </div>
       <div class="ceremony-card s-small">
         <div class="scale">Small</div>
-        <div class="recs"><b>1 record</b> — everything on the Effort root / Delivery&nbsp;Ticket</div>
+        <div class="recs"><b>1 record</b> — everything on the Effort root / Delivery Ticket</div>
         <ul>
-          <li>Product intent + concise System/Program <b>on the root</b></li>
-          <li>TypeScript/Web lens at shallow depth</li>
+          <li>Product intent + concise TDD <b>on the root</b></li>
+          <li>Same System/Program skeleton, minimal depth</li>
           <li>No separate design records at all</li>
         </ul>
       </div>
@@ -227,361 +209,516 @@
       <button class="tab-btn" data-tab="p3">3 · TS/web change (Small)</button>
     </div>
 
-    <!-- ============ PROJECT 1 : EMBEDDED (LARGE) ============ -->
+    <!-- ==================== PROJECT 1 : EMBEDDED (LARGE) ==================== -->
     <div class="tab-pane active" id="p1">
-      <div class="state-panel">
-        <span class="kv"><b>Scale</b>: Large</span>
-        <span class="kv"><b>Records</b>: Effort root + Product Design + Technical Design</span>
-        <span class="kv"><b>Layers</b>: System + Program + Transition</span>
-        <span class="kv"><b>Profile</b>: Embedded</span>
-        <span class="kv"><b>Ceremony verdict</b>: full depth, justified by migration risk</span>
+      <div class="proj-note">
+        <b>Representative project:</b> migrating reactor-control firmware from an end-of-life <b>STM32F103</b> to a new <b>STM32H743</b>. Behavior must be preserved so customers do not re-qualify their systems. The TDD below is the deep end of the prototype — full declarative depth for the migration class of work.
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b>Scale</b>Large</div>
+        <div class="stat"><b>Records</b>3 — root · PRD · TDD</div>
+        <div class="stat"><b>TDD</b>System + Program + migration</div>
+        <div class="stat"><b>Diagrams</b>3 mermaid</div>
+        <div class="stat"><b>Views</b>delta · seams · seams-map</div>
       </div>
 
-      <div class="note">
-        Representative project: migrating reactor-control firmware from an end-of-life <b>STM32F103</b> to a new <b>STM32H743</b> board. Behavior must be preserved so customers do not re-qualify their systems.
-      </div>
-
-      <!-- Effort root -->
+      <!-- PRD -->
       <div class="record">
         <div class="record-head">
-          <span class="chip chip-effort">Effort</span>
-          <h3>Migrate reactor-control firmware to STM32H743</h3>
-          <span class="meta">role: Effort (root) · Part of Decision Map #1</span>
-        </div>
-        <div class="record-body">
-          <div class="sec">
-            <h4>Purpose</h4>
-            <p>Replace the end-of-life processor with a new one while preserving <b>identical observable behavior</b>, so existing systems keep their approvals.</p>
-          </div>
-          <div class="sec">
-            <h4>Design records</h4>
-            <ul>
-              <li><span class="chip chip-product">design:product</span> <b>Reactor-control behavior contract</b> (linked below)</li>
-              <li><span class="chip chip-technical">design:technical</span> <b>H743 migration technical design</b> (linked below)</li>
-            </ul>
-          </div>
-          <div class="sec">
-            <h4>Delivery</h4>
-            <ul>
-              <li>Delivery Tickets to be created from the approved technical design after this record is approved by starting the next step.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product Design -->
-      <div class="record">
-        <div class="record-head">
-          <span class="chip chip-product">design:product</span>
+          <span class="badge b-accent">design:product</span>
           <h3>Reactor-control behavior contract</h3>
-          <span class="meta">synthesized from resolved Decision Tickets · no re-interview</span>
+          <span class="meta">per create-prd template · synthesized from resolved decisions, no re-interview</span>
         </div>
         <div class="record-body">
-          <div class="sec">
-            <h4>Problem statement</h4>
-            <p>The STM32F103 is end-of-life. The product must keep running with <b>no change in what operators, the SCADA host, and commissioning engineers observe</b>, because re-qualification of every deployed site is economically unacceptable.</p>
-          </div>
-          <div class="sec">
-            <h4>Success and measures</h4>
-            <ul>
-              <li><b>Behavioral equivalence</b>: 100% of field functional test vectors pass on new hardware with identical pass criteria (the exit evidence gate).</li>
-              <li><b>Real-time budgets</b>: worst-case control-loop response and comm latency unchanged within measured budget.</li>
-              <li><b>Wire compatibility</b>: Modbus frames and HMI protocol byte-identical.</li>
-              <li><b>No site re-qualification</b>; single factory re-qualification before field cutover.</li>
-            </ul>
-          </div>
-          <div class="sec">
-            <h4>Actors and flows</h4>
-            <ul>
-              <li><b>Operator</b> — HMI: setpoint entry, mode change, fault acknowledge.</li>
-              <li><b>SCADA host</b> — Modbus RTU: poll inputs, write setpoints/modes.</li>
-              <li><b>Commissioning engineer</b> — serial diagnostic tool: calibration, loop tuning.</li>
-              <li><b>Watchdog</b> — safe-state supervisor on firmware stall.</li>
-            </ul>
-          </div>
-          <div class="sec">
-            <h4>Behavioral contract</h4>
-            <ul>
-              <li><b>States</b>: BOOT → SELF-TEST → RUN, with FAULT and SAFE states reachable from RUN.</li>
-              <li><b>Interactions</b>: every write is validated and clamped before application; comms loss &gt; 5&nbsp;s forces a controlled safe state.</li>
-              <li><b>Rules</b>: setpoints clamped to rated range, ramp-rate limited, faults latch until acknowledged.</li>
-              <li><b>Edge behavior</b>: brownout during config write leaves last-good config intact; watchdog timeout always lands in SAFE.</li>
-            </ul>
-          </div>
-          <div class="sec">
-            <h4>Out of scope</h4>
-            <ul><li>No new features, no protocol changes, no HMI redesign, no new diagnostics.</li></ul>
-          </div>
-          <div class="sec">
-            <h4>Alternatives traceability</h4>
-            <ul>
-              <li>Platform choice (STM32H743) — decided by <b>Decision Ticket "Select replacement processor platform"</b>.</li>
-              <li>Behavior-preservation (vs feature refresh) — decided by <b>Decision Ticket "Adopt a behavior-equivalence exit gate"</b>.</li>
-              <li>Single factory re-qualification — decided by <b>Decision Ticket "Re-qualification strategy"</b>.</li>
-            </ul>
-          </div>
-          <div class="sec">
-            <h4>Linked decisions &amp; Evidence index</h4>
-            <ul>
-              <li>Decision Map #1 → Decision Tickets (3, linked above) → Evidence (processor benchmarks, field test vector library, EOL notice).</li>
-              <li>Domain Documentation: <i>CONTEXT.md</i> (Product Design, Transition Design terms).</li>
-            </ul>
-          </div>
-          <div class="foot">Technical schemas and implementation architecture deferred to Technical Design.</div>
+          <div class="sec-label">Problem to Solve</div>
+          <p>The STM32F103 is end-of-life. The product must keep running with <b>no change in what operators, the SCADA host, and commissioning engineers observe</b>, because re-qualifying every deployed site is economically unacceptable.</p>
+
+          <div class="sec-label">What success looks like, and how we measure it</div>
+          <ul>
+            <li><b>Behavioral equivalence</b> — 100% of field functional test vectors pass on new hardware with identical pass criteria (the migration exit gate).</li>
+            <li><b>Real-time budgets</b> — worst-case control-loop response and comm latency unchanged within measured budget.</li>
+            <li><b>Wire compatibility</b> — Modbus frames and HMI protocol byte-identical.</li>
+            <li><b>No site re-qualification</b> — single factory re-qualification before field cutover.</li>
+          </ul>
+
+          <div class="sec-label">Proposed Solution</div>
+          <ul>
+            <li>Keep the same product: same HMI, same SCADA contract, same control behavior.</li>
+            <li>Swap the platform under it — app code unchanged, BSP/HAL rewritten.</li>
+            <li>Prove equivalence on a hardware-in-the-loop rig where the old board is the oracle.</li>
+          </ul>
+
+          <div class="sec-label">Alternative solutions considered</div>
+          <ul>
+            <li>Feature refresh alongside the migration — rejected: triples re-qualification surface.</li>
+            <li>Per-site re-qualification — rejected: economically unacceptable.</li>
+          </ul>
+
+          <div class="sec-label">Out of Scope</div>
+          <ul><li>No new features, no protocol changes, no HMI redesign, no new diagnostics.</li></ul>
         </div>
       </div>
 
-      <!-- Technical Design -->
+      <!-- TDD -->
       <div class="record">
         <div class="record-head">
-          <span class="chip chip-technical">design:technical</span>
-          <h3>H743 migration — System / Program / Transition</h3>
-          <span class="meta">synthesized from settled decisions · approval implicit (next step = Delivery Tickets)</span>
+          <span class="badge b-accent">design:technical</span>
+          <h3>H743 migration — Technical Design Document</h3>
+          <span class="meta">per create-tdd template · System Design then Program Design · approval implicit by starting the next step</span>
         </div>
         <div class="record-body">
 
-          <div class="sec">
-            <h4>System Design <span class="tag">cross-component, language-neutral</span></h4>
-            <p><b>Context &amp; boundaries</b> — Same board role, new MCU. External interfaces unchanged: sensors (ADC/SPI), actuators (PWM/GPIO), SCADA (UART/Modbus RTU), HMI (UART), watchdog (independent IWDG).</p>
-            <p><b>Components, responsibilities, dependency direction</b> — Application layer (control loops, state machine) → Service layer (comm, HMI, watchdog) → HAL/BSP → MCU registers. Dependency strictly downward; application code never touches registers directly.</p>
-            <p><b>Semantic &amp; temporal contracts</b> — Frame formats unchanged; control loop 1&nbsp;ms, comm 10&nbsp;ms, jitter ≤ 20&nbsp;µs, fixed interrupt priority map.</p>
-            <p><b>Quality-attribute scenarios</b> — Worst-case ISR latency under D-cache miss; Modbus poll storm; brownout mid-config-write; watchdog fault injection.</p>
-            <p><b>Constraints &amp; unknowns</b> — New-part availability, H7 silicon errata, cache/MPU behavior, compiler-version differences in generated code.</p>
-            <p><b>Alternatives &amp; tradeoffs</b> — HAL vs register-level (HAL, for portability); bare-metal vs RTOS (bare-metal now, RTOS evaluated later); DMA vs bit-banged comm (DMA).</p>
-            <p><b>Current → target delta</b> (stated once; Transition owns traversing it):</p>
-            <div class="delta"><table>
-              <tr><th></th><th>Current (F103)</th><th>Target (H743)</th></tr>
-              <tr><td>CPU</td><td>Cortex-M3 @ 72&nbsp;MHz</td><td>Cortex-M7 @ 480&nbsp;MHz</td></tr>
-              <tr><td>Flash / SRAM</td><td>64&nbsp;KB / 20&nbsp;KB</td><td>1&nbsp;MB / 512&nbsp;KB</td></tr>
-              <tr><td>Peripherals</td><td>F1 mapping</td><td>H7 mapping (remapped pins, new timer/ADC cores)</td></tr>
-              <tr><td>Boot</td><td>single-bank flash</td><td>dual-bank flash, vector relocation</td></tr>
-              <tr><td>Toolchain</td><td>IAR EWARM</td><td>GCC ARM (pinned, reproducible)</td></tr>
-            </table></div>
+          <div class="sec-label">System Design</div>
+          <p>Cross-component architecture: how the pieces fit together, and how that arrangement changes from today. The delta is one coherent story — a platform swap, not a rewrite.</p>
+
+          <h4 class="takedown">The app's component graph carries over unchanged; only the platform layer is rewritten</h4>
+          <p>Application logic, services, and their dependency direction are today's design and stay today's design. What changes sits entirely below the HAL seam.</p>
+          <pre class="mermaid">
+flowchart TD
+    APP["App layer&lt;br/&gt;control loops · state machine&lt;br/&gt;UNCHANGED"] --> SRV["Service layer&lt;br/&gt;comm_modbus · hmi · watchdog&lt;br/&gt;UNCHANGED"]
+    SRV --> HAL["HAL seam&lt;br/&gt;driver interfaces&lt;br/&gt;REWRITTEN for H7"]
+    HAL --> BSP["BSP&lt;br/&gt;clock · mem · pins&lt;br/&gt;NEW for H7"]
+    BSP --> MCU["STM32H743"]
+    MCU --> SENS["sensors · actuators · UARTs"]
+          </pre>
+
+          <h4 class="takedown">Every wire interface stays byte-identical, so SCADA, HMI and sensors cannot tell the boards apart</h4>
+          <p>The external contracts are frozen — they are the equivalence target. Represented as wire shapes, not prose:</p>
+          <pre>
+Modbus RTU frame (unchanged)
+  addr: u8 · function: u8 · data: n×u8 · crc16: u16
+  functions: 03 read regs · 06 write reg · 16 write multi
+  registers: 0x0000..0x01FF (inputs) · 0x1000..0x10FF (setpoints)
+
+HMI packet (unchanged)
+  { STX, cmd: u8, len: u8, payload[len], crc8 }
+
+Sensor reads (unchanged)
+  read_sensor(ch) -> u16   @ 1 kHz, SPI + GPIO chip-select
+          </pre>
+
+          <h4 class="takedown">The delta is one platform swap — new MCU, remapped peripherals, new toolchain</h4>
+          <div class="ba">
+            <div class="before"><div class="label">Current — STM32F103</div>
+              <pre>CPU        Cortex-M3 @ 72 MHz
+Flash      64 KB (single-bank)
+SRAM       20 KB
+Clock      HSE 8 MHz → PLL
+Periphs    F1 ADC/timer/UART map
+Boot       single-bank flash
+Toolchain  IAR EWARM
+Packaging  compiler-version-dependent</pre>
+            </div>
+            <div class="after"><div class="label">Target — STM32H743</div>
+              <pre>CPU        Cortex-M7 @ 480 MHz
+Flash      1 MB (dual-bank)
+SRAM       512 KB (plus cache)
+Clock      HSE 8 MHz → PLL → 480 MHz
+Periphs    H7 ADC/timer/UART map
+Boot       dual-bank, vector relocation
+Toolchain  GCC ARM (pinned, reproducible)
+Packaging  build checksums in CI</pre>
+            </div>
+          </div>
+          <p>Quality attributes that must survive the swap — the numbers are part of the contract:</p>
+          <div class="stat-row">
+            <div class="stat"><b>1 kHz ± 20µs</b>control-loop cadence</div>
+            <div class="stat"><b>≤ 15µs</b>worst-case ISR latency incl. cache miss</div>
+            <div class="stat"><b>80%</b>stack headroom per task/ISR</div>
+            <div class="stat"><b>0</b>tolerated divergence vs oracle</div>
           </div>
 
-          <div class="sec">
-            <h4>Program Design <span class="tag">in-code shape · Embedded</span></h4>
-            <ul>
-              <li><b>Module/type layout</b> — Same module graph: <code>app_control</code>, <code>app_state</code>, <code>hal_*</code>, <code>bsp_*</code>, <code>comm_modbus</code>; explicit types for states/setpoints.</li>
-              <li><b>Call trees</b> — control loop: <code>tick</code> → <code>app_control_step</code> → HAL reads → PID → actuate; comm receive: ISR → ring buffer → <code>comm_modbus</code>.</li>
-              <li><b>Dependency direction within components</b> — HAL above BSP, BSP above registers; no reverse links.</li>
-              <li><b>Testing seams &amp; strategy</b> — HAL seam enables host-side tests; target-in-the-loop harness runs on <em>both</em> old and new hardware.</li>
-              <li><b>Patterns / depth check</b> — hardware access through BSP only; state-machine pattern; SOLID/CUPID suggested (not enforced); testable-design depth check passes.</li>
-            </ul>
-          </div>
+          <h4 class="takedown">Real-time and fault contracts are the equivalence oracle, not the goal</h4>
+          <p>The only new software risk is silent behavioral divergence. The HIL rig makes divergence visible on every test vector — old board as oracle, new board as candidate, zero tolerance.</p>
+          <pre class="mermaid">
+sequenceDiagram
+    participant H as Test harness
+    participant O as Old board (F103 · oracle)
+    participant N as New board (H743)
+    participant E as Comparator
+    H->>O: same test vector
+    H->>N: same test vector
+    O-->>E: expected outputs (timing + values)
+    N-->>E: actual outputs
+    E->>E: diff — tolerance: none
+    E-->>H: pass / fail
+          </pre>
 
-          <div class="sec">
-            <h4>Transition Design <span class="tag">present — behavior is preserved</span></h4>
-            <ul>
-              <li><b>Baseline behavior-and-resources evidence</b> — Field test suite pass record, timing/utilization measurements, vector/register tables, toolchain provenance captured before first slice.</li>
-              <li><b>Transition slices</b> — 1) boot + clock + LED; 2) ADC/PWM control loop; 3) comms (Modbus/HMI); 4) watchdog + safe-state; 5) full-system equivalence run on the HIL rig.</li>
-              <li><b>Platform seams</b> — HAL/BSP isolates the app from the MCU; old and new boards run in parallel rigs sharing one test harness.</li>
-              <li><b>Coexistence &amp; compatibility</b> — Separate firmware images per board, wire-identical outputs, one shared test oracle.</li>
-              <li><b>Rollback &amp; irreversible</b> — Full reflash to old board possible until factory cutover; irreversible step is field deployment.</li>
-              <li><b>Entry / exit evidence gates</b> — entry: baseline suite green on old HW; per-slice: its vectors green on new HW; exit: full suite green on new HW at identical criteria + timing budgets met.</li>
-            </ul>
-          </div>
+          <h4 class="takedown">Shared state crosses ISR/task/DMA boundaries through a governed matrix</h4>
+          <p>The new cache/DMA topology is where the classic "works on the bench" races hide. Every shared buffer is declared in one matrix with its accessors — this is the cross-component data contract for concurrency:</p>
+          <table>
+            <tr><th>Shared buffer</th><th>Producer</th><th>Consumer</th><th>Guarded by</th></tr>
+            <tr><td>comm_rx ring</td><td>UART ISR (DMA)</td><td>comm_modbus task</td><td>lock-free + D-cache flush on H7</td></tr>
+            <tr><td>setpoint table</td><td>comm_modbus task</td><td>control loop (1 kHz)</td><td>seqlock (double-buffer)</td></tr>
+            <tr><td>fault latch</td><td>control loop</td><td>HMI + SCADA + watchdog</td><td>volatile + atomic read-modify-write</td></tr>
+          </table>
 
-          <div class="sec">
-            <h4>Embedded profile lens <span class="tag">additive concerns</span></h4>
-            <ul>
-              <li><b>Boot/vector/linker/ABI/runtime/memory</b> — dual-bank boot, vector relocation, linker-map delta, FPU/ABI choice (use soft-float to keep byte-identical math), startup/runtime init.</li>
-              <li><b>HAL/BSP/driver boundaries</b> — unchanged seam, remapped driver implementations only.</li>
-              <li><b>ISR/task/DMA shared-state matrix</b> — every shared buffer + which ISR/task touches it; volatile/atomic access rules.</li>
-              <li><b>Timing/utilization &amp; memory budgets</b> — worst-case ISR latency, CPU %, stack usage per task/ISR.</li>
-              <li><b>Cache/MPU/DMA/endian/alignment</b> — D-cache + DMA coherence, MPU regions, alignment of packed structures.</li>
-              <li><b>Watchdog &amp; safe-state</b> — independent watchdog, safe-state ladder.</li>
-              <li><b>Vendor/generated provenance</b> — CubeMX output isolated in <code>vendor/</code>, regeneration diffs recorded.</li>
-              <li><b>Reproducible toolchain evidence</b> — pinned GCC, build checksums.</li>
-              <li><b>Verification strategy</b> — host/simulator/target/HIL; old board = behavioral-equivalence oracle, new board = candidate; staged bring-up diagnostics + cutover evidence.</li>
-            </ul>
-          </div>
+          <div class="sec-label">Program Design</div>
+          <p>In-code shape of the change. App modules are untouched; the views below show what is new or modified below the HAL seam and how it stays testable.</p>
 
-          <div class="sec">
-            <h4>What We're Not Doing</h4>
-            <ul>
-              <li>No RTOS adoption in this effort (evaluated as a future decision). No new comm protocol. No per-site field re-qualification.</li>
-            </ul>
-          </div>
+          <h4 class="takedown">The 1 kHz control path is a straight call tree with no blocking calls</h4>
+          <pre>
+SysTick_Handler                       @ 1 kHz
+  app_control_step(ctx)
+    sensor_batch_read()               hal_sensor
+      bsp_spi_transfer(...)           bsp
+    pid_step(ctx->loop)               pure · host-testable
+    actuate(ctx->output)
+      bsp_pwm_set(ch, duty)           bsp
+    comm_modbus_poll(ctx)             service · non-blocking
+          </pre>
+
+          <h4 class="takedown">The file delta is a swap below the HAL seam; app/ and vendor/ are untouched</h4>
+          <pre class="diff-add">
+ app/control/app_control.c          # UNCHANGED
+ app/state/app_state.c              # UNCHANGED
+ hal/
+ +  hal_sensor_h7.c                 # NEW — H7 ADC core mapping
+ +  hal_actuator_h7.c               # NEW — new timer/PWM channel map
+ ~  hal_comms_h7.c                  # MODIFIED — DMA + D-cache flush
+ bsp/
+ +  bsp_clock_h7.c                  # NEW — 480 MHz, dual-bank boot
+ +  bsp_mem_h7.c                    # NEW — MPU regions + cache policy
+ -  bsp_clock_f1.c                  # REMOVED
+ vendor/
+   stm32h7xx_hal_driver/            # vendor · provenance tracked
+          </pre>
+
+          <h4 class="takedown">The HAL seam is the dependency-injection map: host tests fake it, HIL keeps it real</h4>
+          <pre>
+app_control_step
+  receives ctx->sensors (hal_sensor)   -> host tests fake a sensor batch
+  receives ctx->loop                   -> pure PID, host-testable
+  receives ctx->comm                   -> comms faked in loop tests
+
+hal_sensor
+  receives bsp_spi_transfer            -> hardware boundary, target-in-loop only
+          </pre>
+
+          <h4 class="takedown">Testing seam map — behavior, seam, and where it runs</h4>
+          <table>
+            <tr><th>Behavior</th><th>Seam / fake</th><th>Test location</th></tr>
+            <tr><td>ramp-rate clamped</td><td>pure limiter</td><td>host — app_control.test</td></tr>
+            <tr><td>fault latches until ack</td><td>app_state reducer</td><td>host — app_state.test</td></tr>
+            <tr><td>ISR→ring buffer never drops</td><td>UART ISR (target)</td><td>target — comm_rx.test</td></tr>
+            <tr><td>equivalence vs old board</td><td>old-board oracle rig</td><td>HIL — equivalence.test</td></tr>
+          </table>
+
+          <h4 class="takedown">Key signatures — the new BSP/HAL surface is small and typed</h4>
+          <pre>
+void      app_control_step(ControlCtx *ctx);          // 1 kHz, no blocking calls
+uint16_t  bsp_adc_read(adc_ch_t ch);                  // ~2.5 µs, 12-bit
+void      bsp_pwm_set(pwm_ch_t ch, uint16_t duty);    // 20 kHz output
+void      bsp_mem_flush_dcache(void *buf, size_t n);  // before DMA ownership handoff
+          </pre>
+
+          <h4 class="takedown">Fault handling is a table-driven state machine, not if/else sprawl</h4>
+          <pre>
+on(1 ms tick)
+  if state == FAULT and ack asserted
+    state = SAFE
+  if state == RUN
+    read sensors → pid → clamp → actuate
+    if any fault bit
+      state = FAULT
+      latch cause into fault_register
+          </pre>
+
+          <div class="sec-label">What We're Not Doing</div>
+          <ul>
+            <li>No RTOS adoption in this effort (evaluated as a future decision).</li>
+            <li>No new comm protocol, no HMI redesign, no feature refresh.</li>
+            <li>No per-site field re-qualification.</li>
+          </ul>
+
+          <div class="sec-label">Patterns to Follow</div>
+          <pre>
+// app/state/app_state.c
+// state machine via a transition table + reducer — follow this, extend, don't fork
+static const trans_t TABLE[STATE_MAX][EVENT_MAX] = { ... };
+
+// bsp/bsp_*.c
+// register access confined to bsp_* — app never touches hardware
+// hal/hal_comms.c
+// DMA buffers flushed before ownership handoff (new on H7 — the one new pattern)
+          </pre>
         </div>
       </div>
     </div>
 
-    <!-- ============ PROJECT 2 : PYTHON (MEDIUM) ============ -->
+    <!-- ==================== PROJECT 2 : PYTHON (MEDIUM) ==================== -->
     <div class="tab-pane" id="p2">
-      <div class="state-panel">
-        <span class="kv"><b>Scale</b>: Medium</span>
-        <span class="kv"><b>Records</b>: Effort root (Product intent) + Technical Design</span>
-        <span class="kv"><b>Layers</b>: System + Program + thin Transition</span>
-        <span class="kv"><b>Profile</b>: Python</span>
-        <span class="kv"><b>Ceremony verdict</b>: separate technical record; product intent on root — no interaction-rich product surface</span>
+      <div class="proj-note">
+        <b>Representative project:</b> reworking packaging and release tooling for the <b><code>hydrant</code></b> Python CLI — setuptools/manual releases to a <b>hatchling</b>-backed, CI-gated pipeline. Tooling change ⇒ build/release behavior is replaced, so a migration plan is present but thin.
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b>Scale</b>Medium</div>
+        <div class="stat"><b>Records</b>2 — root (Product intent) · TDD</div>
+        <div class="stat"><b>TDD</b>System + Program + thin migration</div>
+        <div class="stat"><b>Diagrams</b>1 mermaid</div>
       </div>
 
-      <div class="note">
-        Representative project: reworking packaging and release tooling for the <b><code>hydrant</code></b> Python CLI — moving from <code>setup.py</code>/manual releases to a <code>hatchling</code>-backed, CI-gated pipeline. Tooling change ⇒ behavior is replaced, so Transition is present but thin.
-      </div>
-
-      <!-- Effort root -->
+      <!-- Product intent -->
       <div class="record">
         <div class="record-head">
-          <span class="chip chip-effort">Effort</span>
+          <span class="badge b-accent">Effort root · product intent</span>
           <h3>Automate hydrant packaging &amp; releases</h3>
-          <span class="meta">role: Effort (root) · carries Product intent</span>
+          <span class="meta">per create-prd shape, kept on the root (tooling — not interaction-rich)</span>
         </div>
         <div class="record-body">
-          <div class="sec">
-            <h4>Product intent</h4>
-            <ul>
-              <li><b>Problem</b> — releases are manual and brittle (setup.py, hand-run publish, no locked CI).</li>
-              <li><b>Success</b> — one command ships a release; CI builds and publishes wheels/sdist; checksums verified; contributors can install from a clean checkout.</li>
-              <li><b>Behavior</b> — <code>hydrant release</code> gates on tests + lint, builds sdist + wheel, publishes to PyPI, and tags; any failure aborts before publish.</li>
-            </ul>
-          </div>
-          <div class="sec">
-            <h4>Design records</h4>
-            <ul>
-              <li><span class="chip chip-technical">design:technical</span> <b>hydrant release-pipeline technical design</b> (linked below)</li>
-            </ul>
-          </div>
+          <div class="sec-label">Problem to Solve</div>
+          <p>Releases are manual and brittle: metadata lives in <code>setup.py</code>, publish is hand-run, and there is no locked CI gate.</p>
+          <div class="sec-label">Success &amp; measurement</div>
+          <ul>
+            <li>One command ships a release; CI builds + publishes; checksums verified.</li>
+            <li>Contributors can install from a clean checkout.</li>
+            <li>TestPyPI dry-run green before any live publish.</li>
+          </ul>
+          <div class="sec-label">Out of Scope</div>
+          <ul><li>No API changes, no new features, no repo-wide tool migration.</li></ul>
         </div>
       </div>
 
-      <!-- Technical Design -->
+      <!-- TDD -->
       <div class="record">
         <div class="record-head">
-          <span class="chip chip-technical">design:technical</span>
-          <h3>hydrant release pipeline — System / Program / Transition</h3>
-          <span class="meta">Medium materialization · Python profile</span>
+          <span class="badge b-accent">design:technical</span>
+          <h3>hydrant release pipeline — Technical Design Document</h3>
+          <span class="meta">per create-tdd template · Medium materialization · Python profile</span>
         </div>
         <div class="record-body">
 
-          <div class="sec">
-            <h4>System Design <span class="tag">cross-component, language-neutral</span></h4>
-            <p><b>Context &amp; boundaries</b> — Repo, CI (GitHub Actions), PyPI, contributor environments. Build backend switches <code>setuptools → hatchling</code>; versioning via <code>hatch-vcs</code>.</p>
-            <p><b>Components, responsibilities, dependency direction</b> — CI pipeline (build → test → publish) → release wrapper CLI → packaging config → PyPI. Repo config owns metadata; no runtime code owns release logic.</p>
-            <p><b>Semantic &amp; temporal contracts</b> — Semver from git tags; artifact names stable (<code>hydrant-&lt;ver&gt;.tar.gz/.whl</code>); publish runs only after test + lint gates pass.</p>
-            <p><b>Quality-attribute scenarios</b> — Release attempted from a dirty tree; publish partially fails and retries; contributor without local tags still builds from checkout.</p>
-            <p><b>Constraints &amp; unknowns</b> — PyPI token handling (CI secret only); Python 3.9–3.12 support matrix; existing CI jobs must keep passing during the switch.</p>
-            <p><b>Alternatives &amp; tradeoffs</b> — hatchling vs poetry vs pdm (hatchling: lightweight, single-purpose); hatch-vcs vs setuptools-scm; CI-only vs local wrapper (wrapper kept for parity).</p>
-            <p><b>Current → target delta</b> (stated once):</p>
-            <div class="delta"><table>
-              <tr><th></th><th>Current</th><th>Target</th></tr>
-              <tr><td>Build backend</td><td>setuptools (setup.py)</td><td>hatchling (pyproject.toml)</td></tr>
-              <tr><td>Version source</td><td>manual bump</td><td>hatch-vcs from git tags</td></tr>
-              <tr><td>Publish</td><td>hand-run</td><td>CI-gated + TestPyPI dry-run</td></tr>
-              <tr><td>Local dev</td><td>pip install -e</td><td>pip install -e (unchanged)</td></tr>
-            </table></div>
+          <div class="sec-label">System Design</div>
+
+          <h4 class="takedown">CI is the only publisher; the local release command delegates to the same gates</h4>
+          <pre class="mermaid">
+flowchart LR
+    DEV["Contributor"] --> REL["hydrant release"]
+    REL --> GATE{"gates&lt;br/&gt;lint + test + clean tree"}
+    GATE -->|pass| BUILD["hatchling build&lt;br/&gt;sdist + wheel"]
+    BUILD --> DRY["TestPyPI dry-run"]
+    DRY --> PYPI["PyPI"]
+    CI["GitHub Actions&lt;br/&gt;(owns the pipeline)"] -.gates only.-> GATE
+    TAG["git tags via hatch-vcs"] -.version.-> BUILD
+          </pre>
+
+          <h4 class="takedown">Metadata lives once, in pyproject.toml; versions come from git tags</h4>
+          <pre>
+# pyproject.toml — the single source of metadata
+[build-system]
+requires   = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hydrant"
+requires-python = ">=3.9"
+dynamic = ["version"]      # hatch-vcs from git tags
+
+[tool.hatch.version]
+source = "vcs"
+
+artifact contract
+  sdist: dist/hydrant-&lt;ver&gt;.tar.gz
+  wheel: dist/hydrant-&lt;ver&gt;-py3-none-any.whl
+  checksums published alongside, verified on install
+          </pre>
+
+          <h4 class="takedown">The release command surface is the cross-component contract</h4>
+          <pre>
+hydrant release [--dry-run] [--publish]
+  gates    lint + tests pass, tree clean, tag present
+  build    sdist + wheel → dist/
+  publish  PyPI upload — CI-only, gated on TestPyPI dry-run green
+  tag      v&lt;ver&gt; created from the shipped commit
+          </pre>
+
+          <h4 class="takedown">The switch replaces the build backend, not contributor workflows</h4>
+          <div class="ba">
+            <div class="before"><div class="label">Current</div>
+              <pre># setup.py — metadata + version in one file
+setup(name="hydrant",
+      version="0.9.0",
+      packages=["hydrant"])
+
+release: hand-run → upload from laptop</pre>
+            </div>
+            <div class="after"><div class="label">Target</div>
+              <pre># pyproject.toml — metadata; version from tags
+[project]
+name = "hydrant"
+version = { source = "vcs" }
+
+release: hydrant release → CI-gated publish</pre>
+            </div>
           </div>
 
-          <div class="sec">
-            <h4>Program Design <span class="tag">in-code shape · Python</span></h4>
-            <ul>
-              <li><b>Module/package layout</b> — Public <code>hydrant</code> API surface unchanged; packaging metadata fully declared in <code>pyproject.toml</code>; optional <code>hydrant.release</code> internal module for the wrapper.</li>
-              <li><b>Call trees / import direction</b> — <code>release</code> → <code>hatchling</code> build → CI publish step; tests import the public API only; no circular imports.</li>
-              <li><b>Typing strategy</b> — <code>py.typed</code> marker, mypy strict on new code.</li>
-              <li><b>Lint/format/test-harness</b> — ruff + black, pytest layout unchanged.</li>
-              <li><b>Async/concurrency</b> — CLI is synchronous; note the blocking boundary, no async needed.</li>
-              <li><b>Testing seams/strategy</b> — TestPyPI dry-run in CI; local <code>pip install -e</code> as the dev loop.</li>
-            </ul>
-          </div>
+          <div class="sec-label">Program Design</div>
 
-          <div class="sec">
-            <h4>Transition Design <span class="tag">thin — replaces existing build/release behavior</span></h4>
-            <ul>
-              <li><b>Baseline evidence</b> — current manual release steps documented; current CI job outputs captured.</li>
-              <li><b>Slices</b> — 1) pyproject conversion with no behavior change; 2) CI builds + tests on hatchling; 3) TestPyPI dry-run publishes; 4) cut over live publish + tagging.</li>
-              <li><b>Coexistence</b> — keep a <code>setup.py</code> shim until slice 4 so existing contributor docs still work.</li>
-              <li><b>Rollback &amp; irreversible</b> — revert to setuptools config before slice 4; irreversible = first PyPI release from the new backend (a published distribution).</li>
-              <li><b>Gates</b> — entry: existing CI green; exit: TestPyPI artifact installs in a fresh venv with matching checksums.</li>
-            </ul>
-          </div>
+          <h4 class="takedown">The release wrapper is a short, sequential call tree</h4>
+          <pre>
+hydrant release --dry-run
+  run_gates()            # pytest + ruff — must pass
+  build_artifacts()      # hatchling build → dist/
+  publish_dry_run()      # twine --repository testpypi
+          </pre>
 
-          <div class="sec">
-            <h4>Python profile lens <span class="tag">additive concerns</span></h4>
-            <ul>
-              <li><b>Packaging/deps</b> — hatchling, dependency groups, <code>requires-python</code> ≥ 3.9.</li>
-              <li><b>Interpreter/venv/toolchain</b> — support 3.9–3.12; dev via uv/pip.</li>
-              <li><b>Public API shape</b> — CLI unchanged; new <code>hydrant.release</code> stays internal.</li>
-              <li><b>Performance/IO/memory</b> — negligible; noted, no profiling needed.</li>
-            </ul>
-          </div>
+          <h4 class="takedown">The file delta is small and mostly additive</h4>
+          <pre class="diff-add">
+ pyproject.toml                  # MODIFIED — hatchling backend, metadata
+ + hydrant/release.py            # NEW — wrapper around CI-parity gates
+ ~ .github/workflows/release.yml # MODIFIED — CI-gated build + publish
+ + scripts/check_release.sh      # NEW — gates shared with CI
+ - setup.py                      # REMOVED at slice 4
+          </pre>
 
-          <div class="sec">
-            <h4>What We're Not Doing</h4>
-            <ul>
-              <li>No repo-wide switch to another build tool, no Rust extensions, no releasing dev tooling as a package.</li>
-            </ul>
-          </div>
+          <h4 class="takedown">Seams: everything a release touches is fakeable or pointed at TestPyPI</h4>
+          <pre>
+hydrant release
+  receives run_gates          -> fakeable: simulate failing lint in wrapper tests
+  receives build_artifacts    -> fakeable: return stub paths
+  receives publish            -> TestPyPI in CI; never PyPI from local
+
+CI release job
+  receives PYPI_TOKEN         -> CI secret, never in repo or local env
+  receives version            -> from git tags via hatch-vcs
+          </pre>
+
+          <h4 class="takedown">Testing seam map</h4>
+          <table>
+            <tr><th>Behavior</th><th>Seam / fake</th><th>Test location</th></tr>
+            <tr><td>release aborts on failing gates</td><td>fake run_gates → failure</td><td>hydrant/release.test</td></tr>
+            <tr><td>artifact names stable</td><td>real hatchling build</td><td>CI build step</td></tr>
+            <tr><td>publish refuses without token</td><td>missing token → abort</td><td>release.test</td></tr>
+            <tr><td>fresh-venv install clean</td><td>TestPyPI wheel</td><td>CI install smoke</td></tr>
+          </table>
+
+          <h4 class="takedown">Key signatures</h4>
+          <pre>
+def build_artifacts() -> tuple[Path, Path]: ...        # (sdist, wheel)
+def publish(artifacts, repo: str, token: str) -> None
+def release(*, dry_run: bool) -> ReleaseResult
+          </pre>
+
+          <div class="sec-label">What We're Not Doing</div>
+          <ul>
+            <li>No poetry/pdm migration, no Rust extensions, no publishing dev tooling as a package.</li>
+            <li>No repo-wide tooling churn beyond the build/release path.</li>
+          </ul>
+
+          <div class="sec-label">Patterns to Follow</div>
+          <pre>
+# hydrant/cli.py — existing argparse entrypoint; release reuses it
+# tests/ — pytest, src layout; new tests follow existing conventions
+          </pre>
         </div>
       </div>
     </div>
 
-    <!-- ============ PROJECT 3 : TS/WEB (SMALL) ============ -->
+    <!-- ==================== PROJECT 3 : TS/WEB (SMALL) ==================== -->
     <div class="tab-pane" id="p3">
-      <div class="state-panel">
-        <span class="kv"><b>Scale</b>: Small</span>
-        <span class="kv"><b>Records</b>: 1 — Effort root carries everything</span>
-        <span class="kv"><b>Layers</b>: concise System + Program on the root</span>
-        <span class="kv"><b>Profile</b>: TypeScript/Web (shallow)</span>
-        <span class="kv"><b>Ceremony verdict</b>: no separate records; design rides with the single Delivery Ticket</span>
+      <div class="proj-note">
+        <b>Representative project:</b> adding a <b>session export</b> action to the Settings page of a web app. Small, single-surface change — the whole design lives on the Effort root / its Delivery Ticket. Same TDD skeleton, deliberately shallow.
       </div>
-
-      <div class="note">
-        Representative project: adding a <b>session export</b> action to the settings page of a web app. Small, single-surface change — the whole design lives on the Effort root and its one Delivery Ticket.
+      <div class="stat-row">
+        <div class="stat"><b>Scale</b>Small</div>
+        <div class="stat"><b>Records</b>1 — Effort root carries everything</div>
+        <div class="stat"><b>TDD</b>concise System + Program on root</div>
+        <div class="stat"><b>Diagrams</b>1 mermaid</div>
       </div>
 
       <div class="record">
         <div class="record-head">
-          <span class="chip chip-effort">Effort</span>
+          <span class="badge b-accent">Effort root · product intent + concise TDD</span>
           <h3>Session export on Settings</h3>
-          <span class="meta">role: Effort (root) · Small — no separate design records</span>
+          <span class="meta">Small — no separate design records; design rides with the one Delivery Ticket</span>
         </div>
         <div class="record-body">
-          <div class="sec">
-            <h4>Product intent</h4>
-            <ul>
-              <li><b>Problem</b> — users cannot download their own session data.</li>
-              <li><b>Success</b> — a Settings button downloads all visible sessions as <code>sessions.json</code>; 10k sessions export in &lt; 2&nbsp;s.</li>
-              <li><b>Behavior</b> — clicking <i>Export</i> starts a download of everything the user can see; the UI stays responsive.</li>
-            </ul>
-          </div>
+          <div class="sec-label">Problem to Solve</div>
+          <p>Users cannot download their own session data.</p>
+          <div class="sec-label">Success &amp; measurement</div>
+          <ul>
+            <li>A Settings button downloads all visible sessions as <code>sessions.json</code>.</li>
+            <li>10k sessions export in &lt; 2 s; the UI stays responsive.</li>
+          </ul>
 
-          <div class="sec">
-            <h4>Concise System + Program design <span class="tag">on the root · TS/Web at shallow depth</span></h4>
-            <ul>
-              <li><b>System</b> — Settings page → API client (<code>getSessionsExport</code>) → <code>GET /api/sessions/export</code> → storage query. One new route, dependency direction unchanged.</li>
-              <li><b>Program</b> — one component handler on the Settings page, one API-client method, one server route, one service function that builds export rows (the test seam).</li>
-              <li><b>Type strategy</b> — reuse existing DTO types; no strictness change.</li>
-              <li><b>Client/server flow</b> — <code>fetch</code> → blob → download; one awaited call, non-blocking.</li>
-              <li><b>Build/bundler</b> — no config change; no new dependencies.</li>
-              <li><b>Testing</b> — unit-test the service function + one e2e happy path.</li>
-            </ul>
-          </div>
+          <div class="sec-label">System Design</div>
 
-          <div class="sec">
-            <h4>Out of scope / not doing</h4>
-            <ul><li>CSV export, exporting other data types, streaming, pagination improvements.</li></ul>
-          </div>
+          <h4 class="takedown">A single read-only endpoint streams the caller's own sessions</h4>
+          <pre class="mermaid">
+sequenceDiagram
+    participant U as Settings page
+    participant C as API client
+    participant R as GET /api/sessions/export
+    participant S as sessionExport service
+    participant D as DB
+    U->>C: click Export
+    C->>R: fetch export
+    R->>S: buildExportRows(sessions)
+    S->>D: query sessions (scoped to caller)
+    D-->>S: rows
+    S-->>R: JSON
+    R-->>C: application/json
+    C-->>U: blob → download sessions.json
+          </pre>
 
-          <div class="sec">
-            <h4>Delivery</h4>
-            <ul>
-              <li>One self-contained <b>Delivery Ticket</b> (tracer bullet) carrying this design; implementation fits a single fresh context window.</li>
-            </ul>
-          </div>
-          <div class="foot">The Delivery Ticket condenses this intent; no Design Artifact records are materialized for a Small effort.</div>
+          <h4 class="takedown">The endpoint and row schema are the whole cross-component contract</h4>
+          <pre>
+GET /api/sessions/export
+  auth: caller's session — own data only
+  200  application/json
+       { "sessions": SessionRow[] }
+
+interface SessionRow {
+  id: string;
+  startedAt: string;         // ISO-8601
+  endedAt: string | null;
+  device: string;
+  meta: Record&lt;string, unknown&gt;;
+}
+          </pre>
+
+          <div class="sec-label">Program Design</div>
+
+          <h4 class="takedown">Three small additions; nothing else changes</h4>
+          <pre class="diff-add">
+ src/
+ ~  routes/settings.tsx            # MODIFIED — mount &lt;ExportButton&gt;
+ +  components/export-button.tsx   # NEW
+ +  hooks/use-session-export.ts    # NEW — loading/error/download
+ ~  lib/api-client.ts              # MODIFIED — getSessionsExport()
+ app/api/sessions/export/route.ts  # NEW — endpoint handler
+ src/lib/services/session-export.ts# NEW — buildExportRows (test seam)
+          </pre>
+
+          <h4 class="takedown">Testing seam map — one pure function carries the risk</h4>
+          <table>
+            <tr><th>Behavior</th><th>Seam / fake</th><th>Test location</th></tr>
+            <tr><td>rows map correctly</td><td>pure buildExportRows</td><td>session-export.test</td></tr>
+            <tr><td>download happens</td><td>fake fetch → blob</td><td>use-session-export.test</td></tr>
+            <tr><td>error surfaces</td><td>fake fetch → 500</td><td>export-button.test</td></tr>
+            <tr><td>e2e happy path</td><td>real server</td><td>e2e/settings-export.spec</td></tr>
+          </table>
+
+          <div class="sec-label">What We're Not Doing</div>
+          <ul><li>No CSV, no export of other data types, no streaming, no pagination changes.</li></ul>
+
+          <div class="sec-label">Patterns to Follow</div>
+          <pre>
+// src/lib/api-client.ts — existing fetch wrapper; the new method follows it
+          </pre>
         </div>
       </div>
     </div>
 
   </section>
 
-  <footer class="foot" style="margin-top:28px;">
-    Prototype for <b>wayfinder ticket #14</b> · throwaway branch <code>prototype/design-artifacts</code> · see README.md for the info pack. Built from the Product Design (#5) and Technical Design (#15) contracts of the Decision Map #1.
-  </footer>
+  <div class="foot">
+    Prototype for <b>wayfinder ticket #14</b> · throwaway branch <code>prototype/design-artifacts</code> · built to match the HumanLayer design-doc family (create-prd, create-tdd) over the Product Design (#5) / Technical Design (#15) contracts of Decision Map #1. Full info pack: README.md.
+  </div>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
   const bar = document.getElementById('tabbar');
   const btns = bar.querySelectorAll('.tab-btn');
@@ -592,6 +729,11 @@
     const q = new URLSearchParams(location.search);
     q.set('project', id);
     history.replaceState(null, '', '?' + q.toString());
+    if (window.mermaid) {
+      document.querySelectorAll('#tabbar ~ .tab-pane.active pre.mermaid').forEach((el, i) => {
+        if (!el.dataset.rendered) { el.dataset.rendered = '1'; mermaid.render('mm' + id + i, el.textContent).then(r => { el.innerHTML = r.svg; }); }
+      });
+    }
   }
   btns.forEach(b => b.addEventListener('click', () => show(b.dataset.tab)));
   document.addEventListener('keydown', e => {
@@ -600,8 +742,20 @@
     if (e.key === 'ArrowRight') show(btns[(cur + 1) % btns.length].dataset.tab);
     if (e.key === 'ArrowLeft') show(btns[(cur - 1 + btns.length) % btns.length].dataset.tab);
   });
-  const initial = new URLSearchParams(location.search).get('project');
-  if (initial && document.getElementById(initial)) show(initial);
+  if (window.mermaid) {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        background: '#1b1e28', primaryColor: '#1b1e28', primaryTextColor: '#a6accd',
+        primaryBorderColor: '#5de4c7', lineColor: '#303340', secondaryColor: '#171922',
+        tertiaryColor: '#303340', fontFamily: 'IBM Plex Mono, monospace', fontSize: '13px',
+        actorBkg: '#171922', actorBorder: '#303340', actorTextColor: '#a6accd',
+        noteBkgColor: '#303340', noteTextColor: '#a6accd'
+      }
+    });
+    show('p1');
+  }
 </script>
 </body>
 </html>
