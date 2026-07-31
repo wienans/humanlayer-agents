@@ -40,6 +40,21 @@ A Design Artifact that owns the approved problem-and-behavior contract for an Ef
 **Product intent**:
 The concise statement of an Effort's problem, success, and behavior kept on the Effort root when no separate Product Design record is materialized.
 
+**Technical Design**:
+A Design Artifact that owns the approved implementation intent for an Effort while open, composed of System Design, Program Design, and removable Transition Design layers and guided by a language-neutral core with progressively disclosed profile lenses.
+
+**System Design**:
+A Technical Design layer that owns the cross-component architecture: system context and boundaries, components with responsibilities and dependency direction, semantic and temporal contracts, quality-attribute scenarios, constraints and unknowns, alternatives and tradeoffs, and the current-to-target delta. It states the delta once; Transition Design owns the plan for traversing it.
+
+**Program Design**:
+A Technical Design layer that owns the in-code shape: module and type layout, call trees, dependency direction within components, testing seams and strategy, and patterns to follow. SOLID and CUPID are suggested quality guidance rather than enforced; testable design is a depth check.
+
+**Transition Design**:
+A removable Technical Design layer that owns the migration and cutover path when an Effort preserves or replaces existing behavior: baseline behavior-and-resources evidence, transition slices, platform seams, coexistence and compatibility, rollback and irreversible steps, and entry and exit evidence gates. It is omitted for greenfield efforts.
+
+**Profile Lens**:
+A progressively disclosed, additive Technical Design lens that injects domain-specific concerns, vocabulary, and views into the language-neutral core without forking it. Profile lenses compose; the default Embedded, Python, and TypeScript lenses are selected by the stack an Effort touches and overridable by the human.
+
 **Delivery Ticket**:
 A self-contained tracer bullet that condenses approved upstream intent into an implementation contract. Its implementation fits a single fresh context window and delivers a narrow, complete, independently verifiable path; an Effort may have multiple Delivery Tickets whose blocking graph forms incremental delivery phases. _Avoid_: implementation ticket, unqualified "ticket".
 
