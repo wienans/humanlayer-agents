@@ -6,11 +6,14 @@
 <title>Prototype — design artifacts at three scales</title>
 <!--
   PROTOTYPE (wayfinder ticket #14).
-  Follows the HumanLayer design-doc family:
-    - Product side   : .opencode/skills/create-prd  (Problem / Success / Solution / Out of Scope)
-    - Technical side : .opencode/skills/create-tdd  (System Design / Program Design /
-                                                      What We're Not Doing / Patterns to Follow)
-  Visual language borrowed from create-tdd/references/artifact_template.html (poimandres dark).
+  Follows the HumanLayer design-doc family directly:
+    - create-design-discussion  (Summary / Current / Desired / Not-doing /
+                                 Proposed End-State Architecture with Before+After,
+                                 Design Questions, Resolved, Patterns to follow)
+    - create-prd                (Problem / Success / Solution / Out of Scope)
+    - create-tdd                (System Design / Program Design /
+                                 What We're Not Doing / Patterns to Follow)
+  Visual language borrowed from create-tdd/references/artifact_template.html.
 -->
 <style>
   @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
@@ -62,9 +65,6 @@
   }
   pre code { background: none; padding: 0; font-size: inherit; }
   pre.mermaid { background: var(--bg-deep); text-align: center; }
-  pre.diff-add, pre.diff-del { margin: 0.3em 0; }
-  pre.diff-add { border-color: rgba(93,228,199,0.35); }
-  pre.diff-del { border-color: rgba(208,103,157,0.35); }
 
   blockquote { margin: 1em 0; padding: 2px 0 2px 16px; border-left: 2px solid var(--accent-dim); color: var(--muted); }
 
@@ -82,6 +82,8 @@
   .b-principle{ color: var(--pink);   border-color: rgba(240,135,189,0.4); background: rgba(240,135,189,0.1); }
   .b-kept     { color: var(--text);   border-color: var(--border);         background: rgba(166,172,205,0.08); }
   .b-removed  { color: var(--bg);     border-color: var(--rose);           background: var(--rose); }
+  .b-open     { color: var(--yellow); border-color: rgba(255,250,194,0.4); background: rgba(255,250,194,0.08); }
+  .b-resolved { color: var(--mint);   border-color: rgba(93,228,199,0.4);  background: rgba(93,228,199,0.08); }
 
   .stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; }
   .stat { background: var(--bg); border: 1px solid var(--border); padding: 8px 14px; font-family: var(--mono); font-size: 9.5px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.6; }
@@ -166,7 +168,7 @@
   </div>
 
   <div class="assumption">
-    <b>Shape:</b> the design docs below follow the HumanLayer template family — the product side matches <b>create-prd</b> (Problem to Solve / Success / Solution / Out of Scope), the technical side matches <b>create-tdd</b> (System Design / Program Design / What We're Not Doing / Patterns to Follow), with the same visual language as the TDD artifact template. The <em>radically different</em> structures being compared are the artifact sets at the three ceremony levels. Domain content is fictional but realistic — judge <em>depth and shape</em>, not engineering accuracy. Full info pack in README.md.
+    <b>Shape:</b> the design docs below are <b>derived directly from the HumanLayer templates</b> — the product side matches <b>create-prd</b>, the technical side matches <b>create-tdd</b>, and the decision layer matches <b>create-design-discussion</b> (with its <em>Proposed End-State Architecture: Before/After</em> diagrams and open Design Questions). Patterns to follow use the design-discussion template's precise form (title → file → existing snippet → proposed snippet). When the skills are written later (skill-topology ticket #12), their templates should <b>source info directly from these HumanLayer templates</b>, not re-derive them. Domain content is fictional but realistic — judge <em>depth and shape</em>, not engineering accuracy. Info pack in README.md.
   </div>
 
   <section class="ceremony">
@@ -174,28 +176,28 @@
     <div class="ceremony-grid">
       <div class="ceremony-card s-large">
         <div class="scale">Large</div>
-        <div class="recs"><b>3 records</b> — Effort root + Product Design (PRD) + Technical Design (TDD)</div>
+        <div class="recs"><b>4 records</b> — root · Design Discussion · PRD · TDD</div>
         <ul>
+          <li>Design Discussion with full Before/After architecture + multiple questions</li>
           <li>Full PRD + full TDD, both separate records</li>
-          <li>System + Program + migration plan inside the TDD, mermaid + signatures + seam maps</li>
-          <li>Delivery tickets later, from approved intent</li>
+          <li>Mermaid + signatures + seam maps at every decision point</li>
         </ul>
       </div>
       <div class="ceremony-card s-medium">
         <div class="scale">Medium</div>
-        <div class="recs"><b>2 records</b> — Effort root (Product intent) + Technical Design (TDD)</div>
+        <div class="recs"><b>3 records</b> — root (Product intent) · Design Discussion · TDD</div>
         <ul>
+          <li>Design Discussion with Before/After + fewer questions</li>
           <li>Product <b>intent</b> on root (tooling: not interaction-rich)</li>
-          <li>TDD with System + Program + thin migration plan</li>
-          <li>Fewer diagrams, same declarative form</li>
+          <li>TDD with System + Program; thinner diagrams</li>
         </ul>
       </div>
       <div class="ceremony-card s-small">
         <div class="scale">Small</div>
         <div class="recs"><b>1 record</b> — everything on the Effort root / Delivery Ticket</div>
         <ul>
-          <li>Product intent + concise TDD <b>on the root</b></li>
-          <li>Same System/Program skeleton, minimal depth</li>
+          <li>Product intent + mini Design Discussion + concise TDD <b>on the root</b></li>
+          <li>Before/After as side-by-side code, not diagrams</li>
           <li>No separate design records at all</li>
         </ul>
       </div>
@@ -212,14 +214,130 @@
     <!-- ==================== PROJECT 1 : EMBEDDED (LARGE) ==================== -->
     <div class="tab-pane active" id="p1">
       <div class="proj-note">
-        <b>Representative project:</b> migrating reactor-control firmware from an end-of-life <b>STM32F103</b> to a new <b>STM32H743</b>. Behavior must be preserved so customers do not re-qualify their systems. The TDD below is the deep end of the prototype — full declarative depth for the migration class of work.
+        <b>Representative project:</b> migrating reactor-control firmware from an end-of-life <b>STM32F103</b> to a new <b>STM32H743</b>. Behavior must be preserved so customers do not re-qualify their systems. This tab is the deep end of the prototype — every HumanLayer artifact materialized at full depth.
       </div>
       <div class="stat-row">
         <div class="stat"><b>Scale</b>Large</div>
-        <div class="stat"><b>Records</b>3 — root · PRD · TDD</div>
-        <div class="stat"><b>TDD</b>System + Program + migration</div>
-        <div class="stat"><b>Diagrams</b>3 mermaid</div>
-        <div class="stat"><b>Views</b>delta · seams · seams-map</div>
+        <div class="stat"><b>Records</b>4 — root · discussion · PRD · TDD</div>
+        <div class="stat"><b>Diagrams</b>4 mermaid</div>
+        <div class="stat"><b>Questions</b>2 open · 2 resolved</div>
+        <div class="stat"><b>Patterns</b>3 precise</div>
+      </div>
+
+      <!-- Effort root -->
+      <div class="record">
+        <div class="record-head">
+          <span class="badge b-kept">Effort</span>
+          <h3>Migrate reactor-control firmware to STM32H743</h3>
+          <span class="meta">role: Effort (root) · Part of Decision Map #1</span>
+        </div>
+        <div class="record-body">
+          <div class="sec-label">Purpose</div>
+          <p>Replace the end-of-life processor with a new one while preserving <b>identical observable behavior</b>, so existing systems keep their approvals.</p>
+          <div class="sec-label">Design records</div>
+          <ul>
+            <li><span class="badge b-principle">design-discussion</span> <b>Platform swap — design decisions</b> (linked below)</li>
+            <li><span class="badge b-accent">design:product</span> <b>Reactor-control behavior contract</b> (linked below)</li>
+            <li><span class="badge b-accent">design:technical</span> <b>H743 migration technical design</b> (linked below)</li>
+          </ul>
+          <div class="sec-label">Delivery</div>
+          <ul><li>Delivery Tickets to be created from the approved technical design after this record is approved by starting the next step.</li></ul>
+        </div>
+      </div>
+
+      <!-- Design Discussion -->
+      <div class="record">
+        <div class="record-head">
+          <span class="badge b-principle">design-discussion</span>
+          <h3>Platform swap — design decisions</h3>
+          <span class="meta">per create-design-discussion template · decisions made before product/technical design</span>
+        </div>
+        <div class="record-body">
+
+          <div class="sec-label">Summary of change request</div>
+          <p>Replace the end-of-life STM32F103 with a new MCU, keeping every observable behavior identical so no customer re-qualifies their system.</p>
+
+          <div class="sec-label">Current State</div>
+          <ul>
+            <li>Board ships on STM32F103 (Cortex-M3 @ 72 MHz); firmware built with IAR; single-bank flash boot.</li>
+            <li>Operators and SCADA rely on today's Modbus/HMI behavior; field test vectors exist but are re-run manually per site today.</li>
+          </ul>
+
+          <div class="sec-label">Desired End State</div>
+          <ul>
+            <li>New board on STM32H743 with identical behavior; customers cannot tell the boards apart.</li>
+            <li>Equivalence proven automatically on a HIL rig before factory cutover; no per-site re-qualification.</li>
+          </ul>
+
+          <div class="sec-label">What we're not doing</div>
+          <ul><li>No new features, no protocol changes, no HMI redesign, no feature refresh alongside the migration.</li></ul>
+
+          <div class="sec-label">Proposed End-State Architecture</div>
+          <p><b>Before</b> — today's board: one platform, one compiler, behavior tested per site:</p>
+          <pre class="mermaid">
+flowchart TD
+    APP["App layer\ncontrol · state · pid"] --> SRV["Service layer\ncomm · hmi · watchdog"]
+    SRV --> HAL["HAL\nF1 driver impls"]
+    HAL --> BSP["BSP F103\nIAR · single-bank boot"]
+    BSP --> MCU["STM32F103\nCortex-M3 @ 72 MHz"]
+    MCU --> HW["sensors · actuators · UARTs"]
+          </pre>
+          <p><b>After</b> — app layers unchanged, platform layer rewritten below the HAL seam, equivalence gated by a HIL rig:</p>
+          <pre class="mermaid">
+flowchart TD
+    APP["App layer\ncontrol · state · pid\nUNCHANGED"] --> SRV["Service layer\ncomm · hmi · watchdog\nUNCHANGED"]
+    SRV --> HAL["HAL\nH7 driver impls\nREWRITTEN"]
+    HAL --> BSP["BSP H743\nGCC pinned · dual-bank boot\nNEW"]
+    BSP --> MCU["STM32H743\nCortex-M7 @ 480 MHz"]
+    MCU --> HW["same sensors · actuators · UARTs"]
+    HIL["HIL rig — old board as oracle\nzero-tolerance equivalence"] -.gates cutover.-> MCU
+          </pre>
+          <p><b>Concise outline:</b> freeze every wire contract; keep the app/service module graph as-is; rewrite HAL/BSP for H7; pin the GCC toolchain and reproduce builds; run every field vector on old vs new board with zero tolerance before cutover.</p>
+          <pre>
+slices
+  slice1  boot + clock + LED
+  slice2  ADC/PWM control loop
+  slice3  comms (Modbus/HMI)
+  slice4  watchdog + safe-state
+  slice5  full-system equivalence on HIL
+gates
+  entry  baseline suite green on old HW
+  exit   full suite green on new HW + timing budgets met
+          </pre>
+
+          <div class="sec-label">Design Questions</div>
+
+          <h4 class="takedown"><span class="badge b-open">open</span> BSP: CubeMX-generated HAL or hand-written register-level?</h4>
+          <p>CubeMX HAL (option A) gives vendor-supported, regenerable driver code — but injects vendor code into the build. Register-level (option B) is smaller and fully owned, but slower to write and more errata-sensitive.</p>
+          <pre>
+Option A — HAL (recommended)
+  bsp_adc_h7.c -> HAL_ADC_ConfigChannel(...)  // vendor regenerable
+Option B — register-level
+  bsp_adc_h7.c -> ADC1->IER = ...;            // full control, more risk
+          </pre>
+          <p><b>Recommendation:</b> A — the HAL seam already isolates the app; vendor code stays quarantined in <code>vendor/</code> with provenance tracked.</p>
+
+          <h4 class="takedown"><span class="badge b-open">open</span> Soft-float or hard-float for the new FPU?</h4>
+          <p>The M7 has a hardware FPU; using it changes floating-point results in the last ULP, which can break byte-identical equivalence with the old M3.</p>
+          <pre>
+Option A — soft-float (recommended)
+  byte-identical math with F103 · simpler equivalence oracle
+Option B — hard-float
+  faster control math · must widen oracle tolerance to ±1 ULP
+          </pre>
+          <p><b>Recommendation:</b> A — equivalence is the whole point of this migration; the control loop is not CPU-bound on the M7.</p>
+
+          <div class="sec-label">Resolved Design Questions</div>
+
+          <h4 class="takedown"><span class="badge b-resolved">resolved</span> Platform → STM32H743</h4>
+          <p>Chosen for availability, 1&nbsp;MB flash / 512&nbsp;KB SRAM headroom, and dual-bank boot. Rejected: STM32F4 family (insufficient flash for future), STM32L4 (marginal performance), RISC-V parts (toolchain + vendor risk).</p>
+
+          <h4 class="takedown"><span class="badge b-resolved">resolved</span> Equivalence gate → zero-tolerance HIL oracle</h4>
+          <p>The old board stays as a permanent oracle; every field vector runs on both boards and outputs must match exactly. Rejected: sampling a subset of vectors, or a manual site-by-site regression pass.</p>
+
+          <div class="sec-label">Patterns to follow</div>
+          <p>Captured for the implementer — full snippets live in the TDD's <i>Patterns to Follow</i> (below).</p>
+        </div>
       </div>
 
       <!-- PRD -->
@@ -248,7 +366,7 @@
             <li>Prove equivalence on a hardware-in-the-loop rig where the old board is the oracle.</li>
           </ul>
 
-          <div class="sec-label">Alternative solutions considered</div>
+          <div class="sec-label">Alternative Solutions Considered</div>
           <ul>
             <li>Feature refresh alongside the migration — rejected: triples re-qualification surface.</li>
             <li>Per-site re-qualification — rejected: economically unacceptable.</li>
@@ -275,9 +393,9 @@
           <p>Application logic, services, and their dependency direction are today's design and stay today's design. What changes sits entirely below the HAL seam.</p>
           <pre class="mermaid">
 flowchart TD
-    APP["App layer&lt;br/&gt;control loops · state machine&lt;br/&gt;UNCHANGED"] --> SRV["Service layer&lt;br/&gt;comm_modbus · hmi · watchdog&lt;br/&gt;UNCHANGED"]
-    SRV --> HAL["HAL seam&lt;br/&gt;driver interfaces&lt;br/&gt;REWRITTEN for H7"]
-    HAL --> BSP["BSP&lt;br/&gt;clock · mem · pins&lt;br/&gt;NEW for H7"]
+    APP["App layer\ncontrol loops · state machine\nUNCHANGED"] --> SRV["Service layer\ncomm_modbus · hmi · watchdog\nUNCHANGED"]
+    SRV --> HAL["HAL seam\ndriver interfaces\nREWRITTEN for H7"]
+    HAL --> BSP["BSP\nclock · mem · pins\nNEW for H7"]
     BSP --> MCU["STM32H743"]
     MCU --> SENS["sensors · actuators · UARTs"]
           </pre>
@@ -432,15 +550,76 @@ on(1 ms tick)
           </ul>
 
           <div class="sec-label">Patterns to Follow</div>
-          <pre>
-// app/state/app_state.c
-// state machine via a transition table + reducer — follow this, extend, don't fork
-static const trans_t TABLE[STATE_MAX][EVENT_MAX] = { ... };
+          <p>Existing codebase patterns the implementation must follow, with file locations and snippets — existing usage first, then the proposed use.</p>
 
-// bsp/bsp_*.c
-// register access confined to bsp_* — app never touches hardware
-// hal/hal_comms.c
-// DMA buffers flushed before ownership handoff (new on H7 — the one new pattern)
+          <h4 class="takedown">Register access stays inside BSP modules — the app never touches hardware</h4>
+          <p>Pattern: every register and peripheral access lives in a <code>bsp_*</code> module; <code>hal_*</code> only calls BSP. File: <code>bsp/bsp_adc.c</code>, <code>hal/hal_sensor.c</code>.</p>
+          <div class="ba">
+            <div class="before"><div class="label">Existing — bsp/bsp_adc.c (F1)</div>
+              <pre>static ADC_TypeDef *const adc = ADC1;
+
+void bsp_adc_init(void) {
+  adc-&gt;CR2 |= ADC_CR2_ADON;      // F1-specific
+}
+uint16_t bsp_adc_read(adc_ch_t ch) {
+  adc-&gt;SQR3 = ch &amp; 0xF;          // F1 channel mux
+  adc-&gt;CR2 |= ADC_CR2_SWSTART;
+  while (!(adc-&gt;SR &amp; ADC_SR_EOC)) {}
+  return adc-&gt;DR;
+}</pre>
+            </div>
+            <div class="after"><div class="label">Proposed — bsp/bsp_adc_h7.c (H7)</div>
+              <pre>ADC_HandleTypeDef hadc1;         // H7 multi-core ADC
+
+void bsp_adc_init(void) {
+  hadc1.Instance = ADC1;
+  HAL_ADC_ConfigChannel(&amp;hadc1, &amp;sConfig);
+}
+uint16_t bsp_adc_read(adc_ch_t ch) {
+  HAL_ADC_Start(&amp;hadc1);
+  HAL_ADC_PollForConversion(&amp;hadc1, HAL_MAX_DELAY);
+  return (uint16_t)HAL_ADC_GetValue(&amp;hadc1);
+}</pre>
+            </div>
+          </div>
+
+          <h4 class="takedown">State machines are transition tables with a reducer, not if/else sprawl</h4>
+          <p>Pattern: states and events declared once; one <code>app_state_step</code> reducer drives every transition. File: <code>app/state/app_state.c</code>.</p>
+          <div class="ba">
+            <div class="before"><div class="label">Existing — app/state/app_state.c</div>
+              <pre>static const trans_t TABLE[STATE_MAX][EVENT_MAX] = {
+  [RUN][EV_FAULT]  = { .next = FAULT, .latch = true  },
+  [FAULT][EV_ACK]  = { .next = SAFE,  .latch = false },
+  [SAFE][EV_RUN]   = { .next = RUN,   .latch = false },
+};
+
+void app_state_step(StateCtx *ctx) {
+  const trans_t *t = &amp;TABLE[ctx-&gt;state][ctx-&gt;event];
+  ctx-&gt;state = t-&gt;next;
+  if (t-&gt;latch) ctx-&gt;fault = ctx-&gt;cause;
+}</pre>
+            </div>
+            <div class="after"><div class="label">Proposed — same pattern, extended for cache/DMA</div>
+              <pre>/* one new transition: DMA error must force SAFE immediately */
+static const trans_t TABLE[STATE_MAX][EVENT_MAX] = {
+  [RUN][EV_DMA_ERR]  = { .next = SAFE, .latch = true  },
+};
+
+void app_state_step(StateCtx *ctx) {
+  const trans_t *t = &amp;TABLE[ctx-&gt;state][ctx-&gt;event];
+  ctx-&gt;state = t-&gt;next;
+  if (t-&gt;latch) ctx-&gt;fault = ctx-&gt;cause;
+  if (ctx-&gt;state == SAFE) bsp_mem_invalidate_dcache(rx_buf, RX_SZ);
+}</pre>
+            </div>
+          </div>
+
+          <h4 class="takedown">DMA buffers are flushed before ownership handoff (new on H7)</h4>
+          <p>Pattern: the D-cache makes CPU-written DMA buffers stale; flush before giving the buffer to a DMA-capable peripheral. File: <code>hal/hal_comms.c</code>. New pattern — no existing precedent on F1.</p>
+          <pre>
+/* hal/hal_comms.c — before handing a TX buffer to the UART DMA */
+bsp_mem_flush_dcache(tx_buf, TX_BUF_SIZE);
+HAL_UART_Transmit_DMA(&amp;huart2, tx_buf, TX_BUF_SIZE);
           </pre>
         </div>
       </div>
@@ -453,15 +632,16 @@ static const trans_t TABLE[STATE_MAX][EVENT_MAX] = { ... };
       </div>
       <div class="stat-row">
         <div class="stat"><b>Scale</b>Medium</div>
-        <div class="stat"><b>Records</b>2 — root (Product intent) · TDD</div>
-        <div class="stat"><b>TDD</b>System + Program + thin migration</div>
-        <div class="stat"><b>Diagrams</b>1 mermaid</div>
+        <div class="stat"><b>Records</b>3 — root · discussion · TDD</div>
+        <div class="stat"><b>Diagrams</b>2 mermaid</div>
+        <div class="stat"><b>Questions</b>2 open · 2 resolved</div>
+        <div class="stat"><b>Patterns</b>3 precise</div>
       </div>
 
       <!-- Product intent -->
       <div class="record">
         <div class="record-head">
-          <span class="badge b-accent">Effort root · product intent</span>
+          <span class="badge b-kept">Effort root · product intent</span>
           <h3>Automate hydrant packaging &amp; releases</h3>
           <span class="meta">per create-prd shape, kept on the root (tooling — not interaction-rich)</span>
         </div>
@@ -479,6 +659,90 @@ static const trans_t TABLE[STATE_MAX][EVENT_MAX] = { ... };
         </div>
       </div>
 
+      <!-- Design Discussion -->
+      <div class="record">
+        <div class="record-head">
+          <span class="badge b-principle">design-discussion</span>
+          <h3>Release pipeline — design decisions</h3>
+          <span class="meta">per create-design-discussion template · lighter than Large, same structure</span>
+        </div>
+        <div class="record-body">
+
+          <div class="sec-label">Summary of change request</div>
+          <p>Make releases one-command and CI-gated instead of a manual laptop ritual.</p>
+
+          <div class="sec-label">Current State</div>
+          <ul>
+            <li>Metadata + version live in <code>setup.py</code>; version bumped by hand.</li>
+            <li>Maintainers build and upload from their laptops; nothing is reproducible in CI.</li>
+          </ul>
+
+          <div class="sec-label">Desired End State</div>
+          <ul>
+            <li><code>hydrant release</code> runs the same gates CI runs; publishing happens in CI only.</li>
+            <li>Version comes from git tags; artifacts verify by checksum.</li>
+          </ul>
+
+          <div class="sec-label">What we're not doing</div>
+          <ul><li>No dependency-manager migration, no build-tool change for the wider repo, no API changes.</li></ul>
+
+          <div class="sec-label">Proposed End-State Architecture</div>
+          <p><b>Before</b> — human on the critical path, two manual steps, version drifted:</p>
+          <pre class="mermaid">
+flowchart LR
+    DEV["Maintainer"] --> PYB["python -m build\n(laptop)"]
+    PYB --> UPL["twine upload\n(manual)"]
+    UPL --> PYPI["PyPI"]
+    SET["setup.py\nversion 0.9.0\nhand-bumped"] -.drifts.-> PYB
+          </pre>
+          <p><b>After</b> — one command; gates + publish owned by CI; version from tags:</p>
+          <pre class="mermaid">
+flowchart LR
+    DEV["Maintainer"] --> REL["hydrant release"]
+    REL --> CI["GitHub Actions\nowner of gates + publish"]
+    CI --> GATE{"gates\nlint + test + clean"}
+    GATE -->|pass| BUILD["hatchling build"]
+    BUILD --> DRY["TestPyPI dry-run"]
+    DRY --> PYPI["PyPI"]
+    TAG["git tags\nhatch-vcs"] -.version.-> BUILD
+          </pre>
+          <p><b>Concise outline:</b> one entrypoint, shared gates, staged publish. A thin <code>hydrant.release</code> wrapper mirrors exactly what CI runs, so the local dry-run is a true rehearsal.</p>
+
+          <div class="sec-label">Design Questions</div>
+
+          <h4 class="takedown"><span class="badge b-open">open</span> Build backend: hatchling, poetry, or pdm?</h4>
+          <pre>
+Option A — hatchling (recommended)
+  single-purpose backend · stdlib-adjacent · minimal surface
+Option B — poetry
+  backend + dependency resolution + lockfile in one
+Option C — pdm
+  modern + PEP 621, heavier new workflow for contributors
+          </pre>
+          <p><b>Recommendation:</b> A — this effort only changes <em>packaging + publishing</em>; a full project manager (B/C) drags in dependency-resolution changes that are out of scope.</p>
+
+          <h4 class="takedown"><span class="badge b-open">open</span> Version source: hatch-vcs or manual bump?</h4>
+          <pre>
+Option A — hatch-vcs (recommended)
+  version = latest git tag · impossible to drift
+Option B — manual version field
+  familiar, but a release can ship the wrong number
+          </pre>
+          <p><b>Recommendation:</b> A — one source of truth; tagging becomes the release act.</p>
+
+          <div class="sec-label">Resolved Design Questions</div>
+
+          <h4 class="takedown"><span class="badge b-resolved">resolved</span> CI is the only publisher</h4>
+          <p>Local <code>hydrant release</code> never touches PyPI; publishing requires the CI token. Rejected: local publish with token on disk (secret sprawl) and fully-manual publish (the status quo this effort exists to kill).</p>
+
+          <h4 class="takedown"><span class="badge b-resolved">resolved</span> TestPyPI dry-run is a hard gate before live publish</h4>
+          <p>Every release uploads to TestPyPI first and installs in a fresh venv before PyPI. Rejected: publish directly to PyPI (rollback pain on a bad artifact).</p>
+
+          <div class="sec-label">Patterns to follow</div>
+          <p>Captured for the implementer — full snippets live in the TDD's <i>Patterns to Follow</i> (below).</p>
+        </div>
+      </div>
+
       <!-- TDD -->
       <div class="record">
         <div class="record-head">
@@ -491,16 +755,7 @@ static const trans_t TABLE[STATE_MAX][EVENT_MAX] = { ... };
           <div class="sec-label">System Design</div>
 
           <h4 class="takedown">CI is the only publisher; the local release command delegates to the same gates</h4>
-          <pre class="mermaid">
-flowchart LR
-    DEV["Contributor"] --> REL["hydrant release"]
-    REL --> GATE{"gates&lt;br/&gt;lint + test + clean tree"}
-    GATE -->|pass| BUILD["hatchling build&lt;br/&gt;sdist + wheel"]
-    BUILD --> DRY["TestPyPI dry-run"]
-    DRY --> PYPI["PyPI"]
-    CI["GitHub Actions&lt;br/&gt;(owns the pipeline)"] -.gates only.-> GATE
-    TAG["git tags via hatch-vcs"] -.version.-> BUILD
-          </pre>
+          <p>The After-architecture diagram in the design discussion is the authority; this section pins the contracts that make it work.</p>
 
           <h4 class="takedown">Metadata lives once, in pyproject.toml; versions come from git tags</h4>
           <pre>
@@ -511,7 +766,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hydrant"
-requires-python = ">=3.9"
+requires-python = "&gt;=3.9"
 dynamic = ["version"]      # hatch-vcs from git tags
 
 [tool.hatch.version]
@@ -606,10 +861,70 @@ def release(*, dry_run: bool) -> ReleaseResult
           </ul>
 
           <div class="sec-label">Patterns to Follow</div>
-          <pre>
-# hydrant/cli.py — existing argparse entrypoint; release reuses it
-# tests/ — pytest, src layout; new tests follow existing conventions
-          </pre>
+          <p>Existing codebase patterns the implementation must follow, with file locations and snippets — existing usage first, then the proposed use.</p>
+
+          <h4 class="takedown">CLI commands hang off the argparse entrypoint</h4>
+          <p>Pattern: subcommands registered on one <code>argparse</code> parser in the CLI module; no logic in the entrypoint. File: <code>hydrant/cli.py</code>.</p>
+          <div class="ba">
+            <div class="before"><div class="label">Existing — hydrant/cli.py</div>
+              <pre>def main(argv=None) -&gt; int:
+    parser = argparse.ArgumentParser(prog="hydrant")
+    parser.add_argument("--verbose", action="store_true")
+    args = parser.parse_args(argv)
+    return run(args)</pre>
+            </div>
+            <div class="after"><div class="label">Proposed — new subcommand, same pattern</div>
+              <pre>def main(argv=None) -&gt; int:
+    parser = argparse.ArgumentParser(prog="hydrant")
+    parser.add_argument("--verbose", action="store_true")
+    sub = parser.add_subparsers(dest="command")
+    rel = sub.add_parser("release")
+    rel.add_argument("--dry-run", action="store_true")
+    rel.add_argument("--publish", action="store_true")
+    return dispatch(args)      # release() lives in hydrant.release</pre>
+            </div>
+          </div>
+
+          <h4 class="takedown">Tests live beside the package in a pytest src-layout</h4>
+          <p>Pattern: one test module per feature, importing from the package, run with plain <code>pytest</code>. File: <code>tests/</code>.</p>
+          <div class="ba">
+            <div class="before"><div class="label">Existing — tests/test_hydrant.py</div>
+              <pre>from hydrant import __version__
+
+def test_importable() -&gt; None:
+    assert __version__  # smoke: package loads</pre>
+            </div>
+            <div class="after"><div class="label">Proposed — tests/test_release.py</div>
+              <pre>from hydrant.release import release, ReleaseResult
+
+def test_release_aborts_on_failing_gates(monkeypatch) -&gt; None:
+    monkeypatch.setattr("hydrant.release.run_gates",
+                        lambda: raise_gate_error())
+    assert release(dry_run=True) is ReleaseResult.ABORTED</pre>
+            </div>
+          </div>
+
+          <h4 class="takedown">CI release job gates through a shared script</h4>
+          <p>Pattern: the release workflow runs a single <code>scripts/*.sh</code> that encodes the gates, so local and CI stay in lockstep. File: <code>.github/workflows/release.yml</code>.</p>
+          <div class="ba">
+            <div class="before"><div class="label">Existing — .github/workflows/ci.yml</div>
+              <pre>jobs:
+  ci:
+    steps:
+      - run: pip install -e .
+      - run: pytest
+      - run: ruff check .</pre>
+            </div>
+            <div class="after"><div class="label">Proposed — release.yml, same idea</div>
+              <pre>jobs:
+  release:
+    steps:
+      - run: ./scripts/check_release.sh   # gates: lint+test+clean+tag
+      - run: python -m build
+      - run: twine upload --repository testpypi dist/*
+      - run: twine upload dist/*          # only after dry-run passes</pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -617,31 +932,52 @@ def release(*, dry_run: bool) -> ReleaseResult
     <!-- ==================== PROJECT 3 : TS/WEB (SMALL) ==================== -->
     <div class="tab-pane" id="p3">
       <div class="proj-note">
-        <b>Representative project:</b> adding a <b>session export</b> action to the Settings page of a web app. Small, single-surface change — the whole design lives on the Effort root / its Delivery Ticket. Same TDD skeleton, deliberately shallow.
+        <b>Representative project:</b> adding a <b>session export</b> action to the Settings page of a web app. Small, single-surface change — everything lives on the Effort root / its Delivery Ticket. Same HumanLayer skeleton, deliberately shallow.
       </div>
       <div class="stat-row">
         <div class="stat"><b>Scale</b>Small</div>
-        <div class="stat"><b>Records</b>1 — Effort root carries everything</div>
-        <div class="stat"><b>TDD</b>concise System + Program on root</div>
+        <div class="stat"><b>Records</b>1 — root carries everything</div>
         <div class="stat"><b>Diagrams</b>1 mermaid</div>
+        <div class="stat"><b>Questions</b>1 open · 1 resolved</div>
+        <div class="stat"><b>Patterns</b>2 precise</div>
       </div>
 
       <div class="record">
         <div class="record-head">
-          <span class="badge b-accent">Effort root · product intent + concise TDD</span>
+          <span class="badge b-kept">Effort root · product intent + mini discussion + concise TDD</span>
           <h3>Session export on Settings</h3>
           <span class="meta">Small — no separate design records; design rides with the one Delivery Ticket</span>
         </div>
         <div class="record-body">
-          <div class="sec-label">Problem to Solve</div>
-          <p>Users cannot download their own session data.</p>
-          <div class="sec-label">Success &amp; measurement</div>
+
+          <div class="sec-label">Product intent</div>
           <ul>
-            <li>A Settings button downloads all visible sessions as <code>sessions.json</code>.</li>
-            <li>10k sessions export in &lt; 2 s; the UI stays responsive.</li>
+            <li><b>Problem</b> — users cannot download their own session data.</li>
+            <li><b>Success</b> — a Settings button downloads all visible sessions as <code>sessions.json</code>; 10k sessions export in &lt; 2 s; the UI stays responsive.</li>
           </ul>
 
-          <div class="sec-label">System Design</div>
+          <div class="sec-label">Design Discussion (on root)</div>
+          <p><b>Summary:</b> a read-only export action on Settings.<br><b>Current:</b> no way to get session data out.<br><b>Desired:</b> one click → <code>sessions.json</code> download, own data only.<br><b>Not doing:</b> CSV, streaming, export of other data types.</p>
+          <div class="ba">
+            <div class="before"><div class="label">Before — Settings</div>
+              <pre>Settings
+  Account
+  Sessions        [no export affordance]
+  Appearance</pre>
+            </div>
+            <div class="after"><div class="label">After — Settings</div>
+              <pre>Settings
+  Account
+  Sessions        [ Export JSON ]
+  Appearance</pre>
+            </div>
+          </div>
+          <h4 class="takedown"><span class="badge b-open">open</span> Export as one JSON blob, or stream rows?</h4>
+          <p><b>Option A (recommended):</b> one <code>application/json</code> blob — matches the 10k-row budget, simplest to test and serve.<br><b>Option B:</b> NDJSON stream — scales to millions of rows, adds streaming plumbing this change doesn't need.</p>
+          <h4 class="takedown"><span class="badge b-resolved">resolved</span> Export is scoped to the caller</h4>
+          <p>The endpoint returns the authenticated user's sessions only; no admin/global export. Rejected: any shared or cross-user export.</p>
+
+          <div class="sec-label">Concise System Design</div>
 
           <h4 class="takedown">A single read-only endpoint streams the caller's own sessions</h4>
           <pre class="mermaid">
@@ -677,7 +1013,7 @@ interface SessionRow {
 }
           </pre>
 
-          <div class="sec-label">Program Design</div>
+          <div class="sec-label">Concise Program Design</div>
 
           <h4 class="takedown">Three small additions; nothing else changes</h4>
           <pre class="diff-add">
@@ -703,9 +1039,56 @@ interface SessionRow {
           <ul><li>No CSV, no export of other data types, no streaming, no pagination changes.</li></ul>
 
           <div class="sec-label">Patterns to Follow</div>
-          <pre>
-// src/lib/api-client.ts — existing fetch wrapper; the new method follows it
-          </pre>
+          <p>Existing codebase patterns the implementation must follow, with file locations and snippets.</p>
+
+          <h4 class="takedown">API calls go through the single fetch wrapper</h4>
+          <p>Pattern: every endpoint call lives in <code>src/lib/api-client.ts</code>; components never call <code>fetch</code> directly. File: <code>src/lib/api-client.ts</code>.</p>
+          <div class="ba">
+            <div class="before"><div class="label">Existing — src/lib/api-client.ts</div>
+              <pre>async function get&lt;T&gt;(path: string): Promise&lt;T&gt; {
+  const res = await fetch(path, { credentials: "include" });
+  if (!res.ok) throw new ApiError(res.status);
+  return res.json();
+}
+
+export function getSessions(): Promise&lt;Session[]&gt; {
+  return get&lt;Session[]&gt;("/api/sessions");
+}</pre>
+            </div>
+            <div class="after"><div class="label">Proposed — same wrapper, blob variant</div>
+              <pre>export async function getSessionsExport(): Promise&lt;Blob&gt; {
+  const res = await fetch("/api/sessions/export", { credentials: "include" });
+  if (!res.ok) throw new ApiError(res.status);
+  return res.blob();
+}</pre>
+            </div>
+          </div>
+
+          <h4 class="takedown">Page components stay thin over a hook</h4>
+          <p>Pattern: page logic lives in a <code>use*</code> hook; the component renders state and wires events. File: <code>src/routes/settings.tsx</code>.</p>
+          <div class="ba">
+            <div class="before"><div class="label">Existing — src/routes/settings.tsx</div>
+              <pre>export function SettingsPage() {
+  const { sessions } = useSessions();
+  return &lt;SessionList sessions={sessions} /&gt;;
+}</pre>
+            </div>
+            <div class="after"><div class="label">Proposed — export wired through a hook</div>
+              <pre>export function SettingsPage() {
+  const { sessions } = useSessions();
+  const { run, status } = useSessionExport();
+  return (
+    &lt;&gt;
+      &lt;SessionList sessions={sessions} /&gt;
+      &lt;ExportButton onExport={run} disabled={status === "loading"} /&gt;
+    &lt;/&gt;
+  );
+}</pre>
+            </div>
+          </div>
+
+          <div class="sec-label">Delivery</div>
+          <ul><li>One self-contained <b>Delivery Ticket</b> (tracer bullet) carrying this design; implementation fits a single fresh context window.</li></ul>
         </div>
       </div>
     </div>
@@ -713,7 +1096,7 @@ interface SessionRow {
   </section>
 
   <div class="foot">
-    Prototype for <b>wayfinder ticket #14</b> · throwaway branch <code>prototype/design-artifacts</code> · built to match the HumanLayer design-doc family (create-prd, create-tdd) over the Product Design (#5) / Technical Design (#15) contracts of Decision Map #1. Full info pack: README.md.
+    Prototype for <b>wayfinder ticket #14</b> · throwaway branch <code>prototype/design-artifacts</code> · built to match the HumanLayer design-doc family (create-design-discussion, create-prd, create-tdd) over the Product Design (#5) / Technical Design (#15) contracts of Decision Map #1. Full info pack: README.md.
   </div>
 
 </div>
@@ -730,8 +1113,11 @@ interface SessionRow {
     q.set('project', id);
     history.replaceState(null, '', '?' + q.toString());
     if (window.mermaid) {
-      document.querySelectorAll('#tabbar ~ .tab-pane.active pre.mermaid').forEach((el, i) => {
-        if (!el.dataset.rendered) { el.dataset.rendered = '1'; mermaid.render('mm' + id + i, el.textContent).then(r => { el.innerHTML = r.svg; }); }
+      document.querySelectorAll('.tab-pane.active pre.mermaid').forEach((el, i) => {
+        if (!el.dataset.rendered) {
+          el.dataset.rendered = '1';
+          mermaid.render('mm' + id + i, el.textContent).then(r => { el.innerHTML = r.svg; });
+        }
       });
     }
   }
