@@ -34,6 +34,12 @@ The continuous identity of one desired outcome from an initial tracker record or
 **Design Artifact**:
 A tracker record that owns currently approved intent while open, qualified as Product Design, Technical Design, or Transition Design. It links relevant Domain Documentation and supporting Evidence rather than duplicating them; once closed, it is historical context.
 
+**Product Design**:
+A Design Artifact that owns the approved problem-and-behavior contract for an Effort while open. It synthesizes resolved decisions and asks only genuinely unresolved product questions; it is materialized as a separate tracker record or as concise Product intent on the Effort root per Adaptive Ceremony. _Avoid_: PRD as the canonical artifact.
+
+**Product intent**:
+The concise statement of an Effort's problem, success, and behavior kept on the Effort root when no separate Product Design record is materialized.
+
 **Delivery Ticket**:
 A self-contained tracer bullet that condenses approved upstream intent into an implementation contract. Its implementation fits a single fresh context window and delivers a narrow, complete, independently verifiable path; an Effort may have multiple Delivery Tickets whose blocking graph forms incremental delivery phases. _Avoid_: implementation ticket, unqualified "ticket".
 
