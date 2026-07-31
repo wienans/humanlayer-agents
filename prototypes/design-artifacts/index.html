@@ -7,9 +7,10 @@
 <!--
   PROTOTYPE (wayfinder ticket #14).
   Follows the HumanLayer design-doc family directly:
-    - create-design-discussion  (Summary / Current / Desired / Not-doing /
-                                 Proposed End-State Architecture with Before+After,
-                                 Design Questions, Resolved, Patterns to follow)
+    - create-design-discussion  (an early short form of PRD+TDD, not a separate
+                                 tracker record — its Proposed End-State
+                                 Architecture Before/After diagrams live inside
+                                 the TDD's System Design)
     - create-prd                (Problem / Success / Solution / Out of Scope)
     - create-tdd                (System Design / Program Design /
                                  What We're Not Doing / Patterns to Follow)
@@ -168,7 +169,7 @@
   </div>
 
   <div class="assumption">
-    <b>Shape:</b> the design docs below are <b>derived directly from the HumanLayer templates</b> — the product side matches <b>create-prd</b>, the technical side matches <b>create-tdd</b>, and the decision layer matches <b>create-design-discussion</b> (with its <em>Proposed End-State Architecture: Before/After</em> diagrams and open Design Questions). Patterns to follow use the design-discussion template's precise form (title → file → existing snippet → proposed snippet). When the skills are written later (skill-topology ticket #12), their templates should <b>source info directly from these HumanLayer templates</b>, not re-derive them. Domain content is fictional but realistic — judge <em>depth and shape</em>, not engineering accuracy. Info pack in README.md.
+    <b>Shape:</b> the design docs below are <b>derived directly from the HumanLayer templates</b> — the product side matches <b>create-prd</b>, the technical side matches <b>create-tdd</b>. <b>create-design-discussion</b> is an <em>early short form of PRD+TDD</em> (a working phase, not a separate tracker record), so it is not materialized on its own — only its <em>Proposed End-State Architecture Before/After diagrams</em> are carried into each TDD's System Design. Patterns to Follow use the precise form (title → file → existing snippet → proposed snippet). When the skills are written later (skill-topology ticket #12), their templates should <b>source info directly from these HumanLayer templates</b>, not re-derive them. Domain content is fictional but realistic — judge <em>depth and shape</em>, not engineering accuracy. Info pack in README.md.
   </div>
 
   <section class="ceremony">
@@ -176,28 +177,28 @@
     <div class="ceremony-grid">
       <div class="ceremony-card s-large">
         <div class="scale">Large</div>
-        <div class="recs"><b>4 records</b> — root · Design Discussion · PRD · TDD</div>
+        <div class="recs"><b>3 records</b> — root · PRD · TDD</div>
         <ul>
-          <li>Design Discussion with full Before/After architecture + multiple questions</li>
           <li>Full PRD + full TDD, both separate records</li>
+          <li>Before/After architecture inside System Design</li>
           <li>Mermaid + signatures + seam maps at every decision point</li>
         </ul>
       </div>
       <div class="ceremony-card s-medium">
         <div class="scale">Medium</div>
-        <div class="recs"><b>3 records</b> — root (Product intent) · Design Discussion · TDD</div>
+        <div class="recs"><b>2 records</b> — root (Product intent) · TDD</div>
         <ul>
-          <li>Design Discussion with Before/After + fewer questions</li>
           <li>Product <b>intent</b> on root (tooling: not interaction-rich)</li>
-          <li>TDD with System + Program; thinner diagrams</li>
+          <li>TDD with System + Program; Before/After in System Design</li>
+          <li>Thinner diagrams, no separate design records</li>
         </ul>
       </div>
       <div class="ceremony-card s-small">
         <div class="scale">Small</div>
         <div class="recs"><b>1 record</b> — everything on the Effort root / Delivery Ticket</div>
         <ul>
-          <li>Product intent + mini Design Discussion + concise TDD <b>on the root</b></li>
-          <li>Before/After as side-by-side code, not diagrams</li>
+          <li>Product intent + concise TDD <b>on the root</b></li>
+          <li>Before/After architecture diagram in System Design</li>
           <li>No separate design records at all</li>
         </ul>
       </div>
@@ -218,9 +219,8 @@
       </div>
       <div class="stat-row">
         <div class="stat"><b>Scale</b>Large</div>
-        <div class="stat"><b>Records</b>4 — root · discussion · PRD · TDD</div>
-        <div class="stat"><b>Diagrams</b>4 mermaid</div>
-        <div class="stat"><b>Questions</b>2 open · 2 resolved</div>
+        <div class="stat"><b>Records</b>3 — root · PRD · TDD</div>
+        <div class="stat"><b>Diagrams</b>3 mermaid</div>
         <div class="stat"><b>Patterns</b>3 precise</div>
       </div>
 
@@ -236,7 +236,6 @@
           <p>Replace the end-of-life processor with a new one while preserving <b>identical observable behavior</b>, so existing systems keep their approvals.</p>
           <div class="sec-label">Design records</div>
           <ul>
-            <li><span class="badge b-principle">design-discussion</span> <b>Platform swap — design decisions</b> (linked below)</li>
             <li><span class="badge b-accent">design:product</span> <b>Reactor-control behavior contract</b> (linked below)</li>
             <li><span class="badge b-accent">design:technical</span> <b>H743 migration technical design</b> (linked below)</li>
           </ul>
@@ -245,100 +244,6 @@
         </div>
       </div>
 
-      <!-- Design Discussion -->
-      <div class="record">
-        <div class="record-head">
-          <span class="badge b-principle">design-discussion</span>
-          <h3>Platform swap — design decisions</h3>
-          <span class="meta">per create-design-discussion template · decisions made before product/technical design</span>
-        </div>
-        <div class="record-body">
-
-          <div class="sec-label">Summary of change request</div>
-          <p>Replace the end-of-life STM32F103 with a new MCU, keeping every observable behavior identical so no customer re-qualifies their system.</p>
-
-          <div class="sec-label">Current State</div>
-          <ul>
-            <li>Board ships on STM32F103 (Cortex-M3 @ 72 MHz); firmware built with IAR; single-bank flash boot.</li>
-            <li>Operators and SCADA rely on today's Modbus/HMI behavior; field test vectors exist but are re-run manually per site today.</li>
-          </ul>
-
-          <div class="sec-label">Desired End State</div>
-          <ul>
-            <li>New board on STM32H743 with identical behavior; customers cannot tell the boards apart.</li>
-            <li>Equivalence proven automatically on a HIL rig before factory cutover; no per-site re-qualification.</li>
-          </ul>
-
-          <div class="sec-label">What we're not doing</div>
-          <ul><li>No new features, no protocol changes, no HMI redesign, no feature refresh alongside the migration.</li></ul>
-
-          <div class="sec-label">Proposed End-State Architecture</div>
-          <p><b>Before</b> — today's board: one platform, one compiler, behavior tested per site:</p>
-          <pre class="mermaid">
-flowchart TD
-    APP["App layer\ncontrol · state · pid"] --> SRV["Service layer\ncomm · hmi · watchdog"]
-    SRV --> HAL["HAL\nF1 driver impls"]
-    HAL --> BSP["BSP F103\nIAR · single-bank boot"]
-    BSP --> MCU["STM32F103\nCortex-M3 @ 72 MHz"]
-    MCU --> HW["sensors · actuators · UARTs"]
-          </pre>
-          <p><b>After</b> — app layers unchanged, platform layer rewritten below the HAL seam, equivalence gated by a HIL rig:</p>
-          <pre class="mermaid">
-flowchart TD
-    APP["App layer\ncontrol · state · pid\nUNCHANGED"] --> SRV["Service layer\ncomm · hmi · watchdog\nUNCHANGED"]
-    SRV --> HAL["HAL\nH7 driver impls\nREWRITTEN"]
-    HAL --> BSP["BSP H743\nGCC pinned · dual-bank boot\nNEW"]
-    BSP --> MCU["STM32H743\nCortex-M7 @ 480 MHz"]
-    MCU --> HW["same sensors · actuators · UARTs"]
-    HIL["HIL rig — old board as oracle\nzero-tolerance equivalence"] -.gates cutover.-> MCU
-          </pre>
-          <p><b>Concise outline:</b> freeze every wire contract; keep the app/service module graph as-is; rewrite HAL/BSP for H7; pin the GCC toolchain and reproduce builds; run every field vector on old vs new board with zero tolerance before cutover.</p>
-          <pre>
-slices
-  slice1  boot + clock + LED
-  slice2  ADC/PWM control loop
-  slice3  comms (Modbus/HMI)
-  slice4  watchdog + safe-state
-  slice5  full-system equivalence on HIL
-gates
-  entry  baseline suite green on old HW
-  exit   full suite green on new HW + timing budgets met
-          </pre>
-
-          <div class="sec-label">Design Questions</div>
-
-          <h4 class="takedown"><span class="badge b-open">open</span> BSP: CubeMX-generated HAL or hand-written register-level?</h4>
-          <p>CubeMX HAL (option A) gives vendor-supported, regenerable driver code — but injects vendor code into the build. Register-level (option B) is smaller and fully owned, but slower to write and more errata-sensitive.</p>
-          <pre>
-Option A — HAL (recommended)
-  bsp_adc_h7.c -> HAL_ADC_ConfigChannel(...)  // vendor regenerable
-Option B — register-level
-  bsp_adc_h7.c -> ADC1->IER = ...;            // full control, more risk
-          </pre>
-          <p><b>Recommendation:</b> A — the HAL seam already isolates the app; vendor code stays quarantined in <code>vendor/</code> with provenance tracked.</p>
-
-          <h4 class="takedown"><span class="badge b-open">open</span> Soft-float or hard-float for the new FPU?</h4>
-          <p>The M7 has a hardware FPU; using it changes floating-point results in the last ULP, which can break byte-identical equivalence with the old M3.</p>
-          <pre>
-Option A — soft-float (recommended)
-  byte-identical math with F103 · simpler equivalence oracle
-Option B — hard-float
-  faster control math · must widen oracle tolerance to ±1 ULP
-          </pre>
-          <p><b>Recommendation:</b> A — equivalence is the whole point of this migration; the control loop is not CPU-bound on the M7.</p>
-
-          <div class="sec-label">Resolved Design Questions</div>
-
-          <h4 class="takedown"><span class="badge b-resolved">resolved</span> Platform → STM32H743</h4>
-          <p>Chosen for availability, 1&nbsp;MB flash / 512&nbsp;KB SRAM headroom, and dual-bank boot. Rejected: STM32F4 family (insufficient flash for future), STM32L4 (marginal performance), RISC-V parts (toolchain + vendor risk).</p>
-
-          <h4 class="takedown"><span class="badge b-resolved">resolved</span> Equivalence gate → zero-tolerance HIL oracle</h4>
-          <p>The old board stays as a permanent oracle; every field vector runs on both boards and outputs must match exactly. Rejected: sampling a subset of vectors, or a manual site-by-site regression pass.</p>
-
-          <div class="sec-label">Patterns to follow</div>
-          <p>Captured for the implementer — full snippets live in the TDD's <i>Patterns to Follow</i> (below).</p>
-        </div>
-      </div>
 
       <!-- PRD -->
       <div class="record">
@@ -391,13 +296,24 @@ Option B — hard-float
 
           <h4 class="takedown">The app's component graph carries over unchanged; only the platform layer is rewritten</h4>
           <p>Application logic, services, and their dependency direction are today's design and stay today's design. What changes sits entirely below the HAL seam.</p>
+          <p><b>Before</b> — today's board: one platform, one compiler, behavior re-verified per site:</p>
+          <pre class="mermaid">
+flowchart TD
+    APP["App layer\ncontrol loops · state machine"] --> SRV["Service layer\ncomm_modbus · hmi · watchdog"]
+    SRV --> HAL["HAL\nF1 driver impls"]
+    HAL --> BSP["BSP F103\nIAR · single-bank boot"]
+    BSP --> MCU["STM32F103\nCortex-M3 @ 72 MHz"]
+    MCU --> SENS["sensors · actuators · UARTs"]
+          </pre>
+          <p><b>After</b> — app layers unchanged, HAL/BSP rewritten below the seam, equivalence gated by a HIL rig before cutover:</p>
           <pre class="mermaid">
 flowchart TD
     APP["App layer\ncontrol loops · state machine\nUNCHANGED"] --> SRV["Service layer\ncomm_modbus · hmi · watchdog\nUNCHANGED"]
     SRV --> HAL["HAL seam\ndriver interfaces\nREWRITTEN for H7"]
     HAL --> BSP["BSP\nclock · mem · pins\nNEW for H7"]
-    BSP --> MCU["STM32H743"]
+    BSP --> MCU["STM32H743\nCortex-M7 @ 480 MHz"]
     MCU --> SENS["sensors · actuators · UARTs"]
+    HIL["HIL rig — old board as oracle\nzero-tolerance equivalence"] -.gates cutover.-> MCU
           </pre>
 
           <h4 class="takedown">Every wire interface stays byte-identical, so SCADA, HMI and sensors cannot tell the boards apart</h4>
@@ -416,6 +332,7 @@ Sensor reads (unchanged)
           </pre>
 
           <h4 class="takedown">The delta is one platform swap — new MCU, remapped peripherals, new toolchain</h4>
+          <p>Decisions from the design discussion are baked in here: the H7's FPU is compiled <b>soft-float</b> so floating-point results stay bit-identical to the F103 (hard-float would change the last ULP and break the equivalence oracle), and the H7 HAL is <b>CubeMX-generated, quarantined in <code>vendor/</code></b> with provenance tracked. H743 was chosen for availability, 1&nbsp;MB flash / 512&nbsp;KB SRAM headroom, and dual-bank boot — F4 (insufficient flash), L4 (marginal performance) and RISC-V (toolchain risk) were rejected.</p>
           <div class="ba">
             <div class="before"><div class="label">Current — STM32F103</div>
               <pre>CPU        Cortex-M3 @ 72 MHz
@@ -632,7 +549,7 @@ HAL_UART_Transmit_DMA(&amp;huart2, tx_buf, TX_BUF_SIZE);
       </div>
       <div class="stat-row">
         <div class="stat"><b>Scale</b>Medium</div>
-        <div class="stat"><b>Records</b>3 — root · discussion · TDD</div>
+        <div class="stat"><b>Records</b>2 — root · TDD</div>
         <div class="stat"><b>Diagrams</b>2 mermaid</div>
         <div class="stat"><b>Questions</b>2 open · 2 resolved</div>
         <div class="stat"><b>Patterns</b>3 precise</div>
@@ -659,35 +576,20 @@ HAL_UART_Transmit_DMA(&amp;huart2, tx_buf, TX_BUF_SIZE);
         </div>
       </div>
 
-      <!-- Design Discussion -->
+
+      <!-- TDD -->
       <div class="record">
         <div class="record-head">
-          <span class="badge b-principle">design-discussion</span>
-          <h3>Release pipeline — design decisions</h3>
-          <span class="meta">per create-design-discussion template · lighter than Large, same structure</span>
+          <span class="badge b-accent">design:technical</span>
+          <h3>hydrant release pipeline — Technical Design Document</h3>
+          <span class="meta">per create-tdd template · Medium materialization · Python profile</span>
         </div>
         <div class="record-body">
 
-          <div class="sec-label">Summary of change request</div>
-          <p>Make releases one-command and CI-gated instead of a manual laptop ritual.</p>
+          <div class="sec-label">System Design</div>
 
-          <div class="sec-label">Current State</div>
-          <ul>
-            <li>Metadata + version live in <code>setup.py</code>; version bumped by hand.</li>
-            <li>Maintainers build and upload from their laptops; nothing is reproducible in CI.</li>
-          </ul>
-
-          <div class="sec-label">Desired End State</div>
-          <ul>
-            <li><code>hydrant release</code> runs the same gates CI runs; publishing happens in CI only.</li>
-            <li>Version comes from git tags; artifacts verify by checksum.</li>
-          </ul>
-
-          <div class="sec-label">What we're not doing</div>
-          <ul><li>No dependency-manager migration, no build-tool change for the wider repo, no API changes.</li></ul>
-
-          <div class="sec-label">Proposed End-State Architecture</div>
-          <p><b>Before</b> — human on the critical path, two manual steps, version drifted:</p>
+          <h4 class="takedown">The pipeline delta: a human-on-the-critical-path release becomes a CI-owned one</h4>
+          <p><b>Before</b> — maintainer on the critical path, two manual steps, version drifts from reality:</p>
           <pre class="mermaid">
 flowchart LR
     DEV["Maintainer"] --> PYB["python -m build\n(laptop)"]
@@ -706,58 +608,13 @@ flowchart LR
     DRY --> PYPI["PyPI"]
     TAG["git tags\nhatch-vcs"] -.version.-> BUILD
           </pre>
-          <p><b>Concise outline:</b> one entrypoint, shared gates, staged publish. A thin <code>hydrant.release</code> wrapper mirrors exactly what CI runs, so the local dry-run is a true rehearsal.</p>
-
-          <div class="sec-label">Design Questions</div>
-
-          <h4 class="takedown"><span class="badge b-open">open</span> Build backend: hatchling, poetry, or pdm?</h4>
-          <pre>
-Option A — hatchling (recommended)
-  single-purpose backend · stdlib-adjacent · minimal surface
-Option B — poetry
-  backend + dependency resolution + lockfile in one
-Option C — pdm
-  modern + PEP 621, heavier new workflow for contributors
-          </pre>
-          <p><b>Recommendation:</b> A — this effort only changes <em>packaging + publishing</em>; a full project manager (B/C) drags in dependency-resolution changes that are out of scope.</p>
-
-          <h4 class="takedown"><span class="badge b-open">open</span> Version source: hatch-vcs or manual bump?</h4>
-          <pre>
-Option A — hatch-vcs (recommended)
-  version = latest git tag · impossible to drift
-Option B — manual version field
-  familiar, but a release can ship the wrong number
-          </pre>
-          <p><b>Recommendation:</b> A — one source of truth; tagging becomes the release act.</p>
-
-          <div class="sec-label">Resolved Design Questions</div>
-
-          <h4 class="takedown"><span class="badge b-resolved">resolved</span> CI is the only publisher</h4>
-          <p>Local <code>hydrant release</code> never touches PyPI; publishing requires the CI token. Rejected: local publish with token on disk (secret sprawl) and fully-manual publish (the status quo this effort exists to kill).</p>
-
-          <h4 class="takedown"><span class="badge b-resolved">resolved</span> TestPyPI dry-run is a hard gate before live publish</h4>
-          <p>Every release uploads to TestPyPI first and installs in a fresh venv before PyPI. Rejected: publish directly to PyPI (rollback pain on a bad artifact).</p>
-
-          <div class="sec-label">Patterns to follow</div>
-          <p>Captured for the implementer — full snippets live in the TDD's <i>Patterns to Follow</i> (below).</p>
-        </div>
-      </div>
-
-      <!-- TDD -->
-      <div class="record">
-        <div class="record-head">
-          <span class="badge b-accent">design:technical</span>
-          <h3>hydrant release pipeline — Technical Design Document</h3>
-          <span class="meta">per create-tdd template · Medium materialization · Python profile</span>
-        </div>
-        <div class="record-body">
-
-          <div class="sec-label">System Design</div>
+          <p>One entrypoint, shared gates, staged publish: a thin <code>hydrant.release</code> wrapper mirrors exactly what CI runs, so the local dry-run is a true rehearsal.</p>
 
           <h4 class="takedown">CI is the only publisher; the local release command delegates to the same gates</h4>
-          <p>The After-architecture diagram in the design discussion is the authority; this section pins the contracts that make it work.</p>
+          <p>Local <code>hydrant release</code> never touches PyPI; publishing requires the CI token. The diagrams above are the authority; this section pins the contracts that make it work.</p>
 
           <h4 class="takedown">Metadata lives once, in pyproject.toml; versions come from git tags</h4>
+          <p>Build backend is <b>hatchling</b>, not poetry/pdm — this effort only changes <em>packaging + publishing</em>, so a full project manager would drag in dependency-resolution changes that are out of scope.</p>
           <pre>
 # pyproject.toml — the single source of metadata
 [build-system]
@@ -937,14 +794,13 @@ def test_release_aborts_on_failing_gates(monkeypatch) -&gt; None:
       <div class="stat-row">
         <div class="stat"><b>Scale</b>Small</div>
         <div class="stat"><b>Records</b>1 — root carries everything</div>
-        <div class="stat"><b>Diagrams</b>1 mermaid</div>
-        <div class="stat"><b>Questions</b>1 open · 1 resolved</div>
+        <div class="stat"><b>Diagrams</b>2 mermaid</div>
         <div class="stat"><b>Patterns</b>2 precise</div>
       </div>
 
       <div class="record">
         <div class="record-head">
-          <span class="badge b-kept">Effort root · product intent + mini discussion + concise TDD</span>
+          <span class="badge b-kept">Effort root · product intent + concise TDD</span>
           <h3>Session export on Settings</h3>
           <span class="meta">Small — no separate design records; design rides with the one Delivery Ticket</span>
         </div>
@@ -956,45 +812,26 @@ def test_release_aborts_on_failing_gates(monkeypatch) -&gt; None:
             <li><b>Success</b> — a Settings button downloads all visible sessions as <code>sessions.json</code>; 10k sessions export in &lt; 2 s; the UI stays responsive.</li>
           </ul>
 
-          <div class="sec-label">Design Discussion (on root)</div>
-          <p><b>Summary:</b> a read-only export action on Settings.<br><b>Current:</b> no way to get session data out.<br><b>Desired:</b> one click → <code>sessions.json</code> download, own data only.<br><b>Not doing:</b> CSV, streaming, export of other data types.</p>
-          <div class="ba">
-            <div class="before"><div class="label">Before — Settings</div>
-              <pre>Settings
-  Account
-  Sessions        [no export affordance]
-  Appearance</pre>
-            </div>
-            <div class="after"><div class="label">After — Settings</div>
-              <pre>Settings
-  Account
-  Sessions        [ Export JSON ]
-  Appearance</pre>
-            </div>
-          </div>
-          <h4 class="takedown"><span class="badge b-open">open</span> Export as one JSON blob, or stream rows?</h4>
-          <p><b>Option A (recommended):</b> one <code>application/json</code> blob — matches the 10k-row budget, simplest to test and serve.<br><b>Option B:</b> NDJSON stream — scales to millions of rows, adds streaming plumbing this change doesn't need.</p>
-          <h4 class="takedown"><span class="badge b-resolved">resolved</span> Export is scoped to the caller</h4>
-          <p>The endpoint returns the authenticated user's sessions only; no admin/global export. Rejected: any shared or cross-user export.</p>
-
           <div class="sec-label">Concise System Design</div>
 
           <h4 class="takedown">A single read-only endpoint streams the caller's own sessions</h4>
+          <p><b>Before</b> — the page reads sessions through the client; there is no export path:</p>
           <pre class="mermaid">
-sequenceDiagram
-    participant U as Settings page
-    participant C as API client
-    participant R as GET /api/sessions/export
-    participant S as sessionExport service
-    participant D as DB
-    U->>C: click Export
-    C->>R: fetch export
-    R->>S: buildExportRows(sessions)
-    S->>D: query sessions (scoped to caller)
-    D-->>S: rows
-    S-->>R: JSON
-    R-->>C: application/json
-    C-->>U: blob → download sessions.json
+flowchart LR
+    SET["Settings page"] --> CLI["api-client\nfetch wrapper"]
+    CLI --> API["GET /api/sessions"]
+    API --> DB[(DB)]
+    SET -. no export affordance .-> CLI
+          </pre>
+          <p><b>After</b> — a new read-only export endpoint behind the same client wrapper, scoped to the caller:</p>
+          <pre class="mermaid">
+flowchart LR
+    SET["Settings page\nExport JSON button"] --> HOOK["useSessionExport hook"]
+    HOOK --> CLI["api-client\ngetSessionsExport()"]
+    CLI --> API["GET /api/sessions/export"]
+    API --> SVC["sessionExport service"]
+    SVC --> DB[(DB)]
+    SVC -->|"blob → sessions.json"| SET
           </pre>
 
           <h4 class="takedown">The endpoint and row schema are the whole cross-component contract</h4>
@@ -1096,7 +933,7 @@ export function getSessions(): Promise&lt;Session[]&gt; {
   </section>
 
   <div class="foot">
-    Prototype for <b>wayfinder ticket #14</b> · throwaway branch <code>prototype/design-artifacts</code> · built to match the HumanLayer design-doc family (create-design-discussion, create-prd, create-tdd) over the Product Design (#5) / Technical Design (#15) contracts of Decision Map #1. Full info pack: README.md.
+    Prototype for <b>wayfinder ticket #14</b> · throwaway branch <code>prototype/design-artifacts</code> · built to match the HumanLayer design-doc family (create-prd, create-tdd — with create-design-discussion's Before/After architecture folded into System Design, since it is a short form of PRD+TDD, not a separate record) over the Product Design (#5) / Technical Design (#15) contracts of Decision Map #1. Full info pack: README.md.
   </div>
 
 </div>
