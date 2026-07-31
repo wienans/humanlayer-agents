@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype — design artifacts at three scales</title>
+<style>
+  :root {
+    --accent: #4f46e5;
+    --accent-soft: #eef2ff;
+    --ink: #1e2430;
+    --muted: #5b6472;
+    --line: #e5e8ee;
+    --paper: #ffffff;
+    --chip-product: #0d9488;
+    --chip-product-bg: #f0fdfa;
+    --chip-technical: #4f46e5;
+    --chip-technical-bg: #eef2ff;
+    --chip-effort: #64748b;
+    --chip-effort-bg: #f1f5f9;
+    --chip-layer: #b45309;
+    --chip-layer-bg: #fffbeb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #fafbfc;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 24px 96px; }
+
+  /* header */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: .08em;
+    font-weight: 700;
+    color: #b45309;
+    background: var(--chip-layer-bg);
+    border: 1px solid #fde68a;
+    border-radius: 999px;
+    padding: 4px 12px;
+    text-transform: uppercase;
+  }
+  h1 { font-size: 30px; line-height: 1.2; margin: 14px 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 15px; }
+  blockquote {
+    margin: 0 0 14px;
+    padding: 14px 18px;
+    background: var(--accent-soft);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 15px;
+  }
+  blockquote a { color: var(--accent); }
+  .assumption {
+    font-size: 13.5px;
+    color: var(--muted);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 0 0 26px;
+  }
+  .assumption b { color: var(--ink); }
+
+  h2 { font-size: 18px; margin: 0 0 12px; }
+
+  /* ceremony strip */
+  .ceremony { margin-bottom: 30px; }
+  .ceremony-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .ceremony-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .ceremony-card .scale {
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .ceremony-card ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+  .ceremony-card ul li { margin: 3px 0; }
+  .ceremony-card .recs { font-size: 13px; margin-top: 8px; color: var(--ink); }
+  .s-large .scale { color: #dc2626; }
+  .s-medium .scale { color: #d97706; }
+  .s-small .scale { color: #16a34a; }
+
+  /* tabs */
+  .tabs-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tab-btn {
+    font: inherit; font-size: 14px; font-weight: 600;
+    padding: 9px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .tab-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; animation: fade .18s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+  /* state panel */
+  .state-panel {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .state-panel .kv { color: var(--muted); }
+  .state-panel .kv b { color: var(--ink); font-weight: 600; }
+
+  /* records */
+  .record {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .record-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    background: #fff;
+  }
+  .record-head h3 { font-size: 16px; margin: 0; }
+  .record-head .meta { font-size: 12px; color: var(--muted); }
+  .chip {
+    font-size: 11px; font-weight: 700; letter-spacing: .02em;
+    padding: 2px 9px; border-radius: 999px;
+  }
+  .chip-product { color: var(--chip-product); background: var(--chip-product-bg); }
+  .chip-technical { color: var(--chip-technical); background: var(--chip-technical-bg); }
+  .chip-effort { color: var(--chip-effort); background: var(--chip-effort-bg); }
+  .chip-layer { color: var(--chip-layer); background: var(--chip-layer-bg); }
+  .record-body { padding: 14px 18px 4px; }
+  .sec { margin-bottom: 16px; }
+  .sec h4 {
+    font-size: 12px; font-weight: 800;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sec h4 .tag { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--chip-layer); font-size: 11px; }
+  .sec p { margin: 0 0 6px; font-size: 14px; }
+  .sec ul { margin: 0; padding-left: 20px; }
+  .sec li { font-size: 13.5px; margin: 4px 0; }
+  .sec li b { font-weight: 650; }
+  .delta table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .delta th, .delta td { text-align: left; padding: 6px 10px; border: 1px solid var(--line); }
+  .delta th { background: #f8fafc; font-weight: 700; }
+  .foot { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 10px; }
+
+  .note {
+    background: #fffbeb; border: 1px solid #fde68a;
+    color: #92400e; border-radius: 8px;
+    font-size: 13px; padding: 10px 14px; margin: 14px 0;
+  }
+  @media (max-width: 720px) { .ceremony-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="badge">Prototype · throwaway · not production</span>
+  <h1>Design artifacts at three scales</h1>
+  <p class="sub">A wayfinder prototype for <b>issue&nbsp;14 — Prototype design artifacts for representative projects</b> (part of the Decision&nbsp;Map #1, "Design a unified architecture-first engineering workflow").</p>
+
+  <blockquote>
+    <b>Question this prototype answers:</b> Do the proposed problem/behavior and technical-design contracts (issues&nbsp;#5 and #15) produce <em>concise but sufficiently deep</em> tracker artifacts for (1)&nbsp;a <b>major Embedded&nbsp;C processor migration</b>, (2)&nbsp;a <b>medium Python tooling change</b>, and (3)&nbsp;a <b>smaller TypeScript/web change</b> — without irrelevant ceremony?
+  </blockquote>
+
+  <div class="assumption">
+    <b>Prototype shape.</b> One self-contained page; the <em>radically different</em> structures being compared are the artifact sets themselves at the three ceremony levels (Small&nbsp;/&nbsp;Medium&nbsp;/&nbsp;Large). Each tab below is one representative project, rendered the way its tracker records would actually look. Content is fictional but realistic; judge the <em>shape and depth</em>, not the domain details. Read the README.md beside this file for the full info pack.
+  </div>
+
+  <section class="ceremony">
+    <h2>Adaptive ceremony at a glance</h2>
+    <div class="ceremony-grid">
+      <div class="ceremony-card s-large">
+        <div class="scale">Large</div>
+        <div class="recs"><b>3 records</b> — Effort root + Product&nbsp;Design + Technical&nbsp;Design</div>
+        <ul>
+          <li>Separate <b>design:product</b> record (behavioral contract)</li>
+          <li>Technical Design with System + Program + <b>Transition</b> layers</li>
+          <li>Embedded profile lens, full depth</li>
+          <li>Delivery tickets later, from approved intent</li>
+        </ul>
+      </div>
+      <div class="ceremony-card s-medium">
+        <div class="scale">Medium</div>
+        <div class="recs"><b>2 records</b> — Effort root (Product&nbsp;intent) + Technical&nbsp;Design</div>
+        <ul>
+          <li>Product <b>intent</b> stays on the root (tooling, not interaction-rich)</li>
+          <li>Technical Design with System + Program + <b>thin</b> Transition (build behavior replaced)</li>
+          <li>Python profile lens</li>
+        </ul>
+      </div>
+      <div class="ceremony-card s-small">
+        <div class="scale">Small</div>
+        <div class="recs"><b>1 record</b> — everything on the Effort root / Delivery&nbsp;Ticket</div>
+        <ul>
+          <li>Product intent + concise System/Program <b>on the root</b></li>
+          <li>TypeScript/Web lens at shallow depth</li>
+          <li>No separate design records at all</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="tabs">
+    <div class="tabs-bar" id="tabbar">
+      <button class="tab-btn active" data-tab="p1">1 · Embedded C migration (Large)</button>
+      <button class="tab-btn" data-tab="p2">2 · Python tooling (Medium)</button>
+      <button class="tab-btn" data-tab="p3">3 · TS/web change (Small)</button>
+    </div>
+
+    <!-- ============ PROJECT 1 : EMBEDDED (LARGE) ============ -->
+    <div class="tab-pane active" id="p1">
+      <div class="state-panel">
+        <span class="kv"><b>Scale</b>: Large</span>
+        <span class="kv"><b>Records</b>: Effort root + Product Design + Technical Design</span>
+        <span class="kv"><b>Layers</b>: System + Program + Transition</span>
+        <span class="kv"><b>Profile</b>: Embedded</span>
+        <span class="kv"><b>Ceremony verdict</b>: full depth, justified by migration risk</span>
+      </div>
+
+      <div class="note">
+        Representative project: migrating reactor-control firmware from an end-of-life <b>STM32F103</b> to a new <b>STM32H743</b> board. Behavior must be preserved so customers do not re-qualify their systems.
+      </div>
+
+      <!-- Effort root -->
+      <div class="record">
+        <div class="record-head">
+          <span class="chip chip-effort">Effort</span>
+          <h3>Migrate reactor-control firmware to STM32H743</h3>
+          <span class="meta">role: Effort (root) · Part of Decision Map #1</span>
+        </div>
+        <div class="record-body">
+          <div class="sec">
+            <h4>Purpose</h4>
+            <p>Replace the end-of-life processor with a new one while preserving <b>identical observable behavior</b>, so existing systems keep their approvals.</p>
+          </div>
+          <div class="sec">
+            <h4>Design records</h4>
+            <ul>
+              <li><span class="chip chip-product">design:product</span> <b>Reactor-control behavior contract</b> (linked below)</li>
+              <li><span class="chip chip-technical">design:technical</span> <b>H743 migration technical design</b> (linked below)</li>
+            </ul>
+          </div>
+          <div class="sec">
+            <h4>Delivery</h4>
+            <ul>
+              <li>Delivery Tickets to be created from the approved technical design after this record is approved by starting the next step.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Design -->
+      <div class="record">
+        <div class="record-head">
+          <span class="chip chip-product">design:product</span>
+          <h3>Reactor-control behavior contract</h3>
+          <span class="meta">synthesized from resolved Decision Tickets · no re-interview</span>
+        </div>
+        <div class="record-body">
+          <div class="sec">
+            <h4>Problem statement</h4>
+            <p>The STM32F103 is end-of-life. The product must keep running with <b>no change in what operators, the SCADA host, and commissioning engineers observe</b>, because re-qualification of every deployed site is economically unacceptable.</p>
+          </div>
+          <div class="sec">
+            <h4>Success and measures</h4>
+            <ul>
+              <li><b>Behavioral equivalence</b>: 100% of field functional test vectors pass on new hardware with identical pass criteria (the exit evidence gate).</li>
+              <li><b>Real-time budgets</b>: worst-case control-loop response and comm latency unchanged within measured budget.</li>
+              <li><b>Wire compatibility</b>: Modbus frames and HMI protocol byte-identical.</li>
+              <li><b>No site re-qualification</b>; single factory re-qualification before field cutover.</li>
+            </ul>
+          </div>
+          <div class="sec">
+            <h4>Actors and flows</h4>
+            <ul>
+              <li><b>Operator</b> — HMI: setpoint entry, mode change, fault acknowledge.</li>
+              <li><b>SCADA host</b> — Modbus RTU: poll inputs, write setpoints/modes.</li>
+              <li><b>Commissioning engineer</b> — serial diagnostic tool: calibration, loop tuning.</li>
+              <li><b>Watchdog</b> — safe-state supervisor on firmware stall.</li>
+            </ul>
+          </div>
+          <div class="sec">
+            <h4>Behavioral contract</h4>
+            <ul>
+              <li><b>States</b>: BOOT → SELF-TEST → RUN, with FAULT and SAFE states reachable from RUN.</li>
+              <li><b>Interactions</b>: every write is validated and clamped before application; comms loss &gt; 5&nbsp;s forces a controlled safe state.</li>
+              <li><b>Rules</b>: setpoints clamped to rated range, ramp-rate limited, faults latch until acknowledged.</li>
+              <li><b>Edge behavior</b>: brownout during config write leaves last-good config intact; watchdog timeout always lands in SAFE.</li>
+            </ul>
+          </div>
+          <div class="sec">
+            <h4>Out of scope</h4>
+            <ul><li>No new features, no protocol changes, no HMI redesign, no new diagnostics.</li></ul>
+          </div>
+          <div class="sec">
+            <h4>Alternatives traceability</h4>
+            <ul>
+              <li>Platform choice (STM32H743) — decided by <b>Decision Ticket "Select replacement processor platform"</b>.</li>
+              <li>Behavior-preservation (vs feature refresh) — decided by <b>Decision Ticket "Adopt a behavior-equivalence exit gate"</b>.</li>
+              <li>Single factory re-qualification — decided by <b>Decision Ticket "Re-qualification strategy"</b>.</li>
+            </ul>
+          </div>
+          <div class="sec">
+            <h4>Linked decisions &amp; Evidence index</h4>
+            <ul>
+              <li>Decision Map #1 → Decision Tickets (3, linked above) → Evidence (processor benchmarks, field test vector library, EOL notice).</li>
+              <li>Domain Documentation: <i>CONTEXT.md</i> (Product Design, Transition Design terms).</li>
+            </ul>
+          </div>
+          <div class="foot">Technical schemas and implementation architecture deferred to Technical Design.</div>
+        </div>
+      </div>
+
+      <!-- Technical Design -->
+      <div class="record">
+        <div class="record-head">
+          <span class="chip chip-technical">design:technical</span>
+          <h3>H743 migration — System / Program / Transition</h3>
+          <span class="meta">synthesized from settled decisions · approval implicit (next step = Delivery Tickets)</span>
+        </div>
+        <div class="record-body">
+
+          <div class="sec">
+            <h4>System Design <span class="tag">cross-component, language-neutral</span></h4>
+            <p><b>Context &amp; boundaries</b> — Same board role, new MCU. External interfaces unchanged: sensors (ADC/SPI), actuators (PWM/GPIO), SCADA (UART/Modbus RTU), HMI (UART), watchdog (independent IWDG).</p>
+            <p><b>Components, responsibilities, dependency direction</b> — Application layer (control loops, state machine) → Service layer (comm, HMI, watchdog) → HAL/BSP → MCU registers. Dependency strictly downward; application code never touches registers directly.</p>
+            <p><b>Semantic &amp; temporal contracts</b> — Frame formats unchanged; control loop 1&nbsp;ms, comm 10&nbsp;ms, jitter ≤ 20&nbsp;µs, fixed interrupt priority map.</p>
+            <p><b>Quality-attribute scenarios</b> — Worst-case ISR latency under D-cache miss; Modbus poll storm; brownout mid-config-write; watchdog fault injection.</p>
+            <p><b>Constraints &amp; unknowns</b> — New-part availability, H7 silicon errata, cache/MPU behavior, compiler-version differences in generated code.</p>
+            <p><b>Alternatives &amp; tradeoffs</b> — HAL vs register-level (HAL, for portability); bare-metal vs RTOS (bare-metal now, RTOS evaluated later); DMA vs bit-banged comm (DMA).</p>
+            <p><b>Current → target delta</b> (stated once; Transition owns traversing it):</p>
+            <div class="delta"><table>
+              <tr><th></th><th>Current (F103)</th><th>Target (H743)</th></tr>
+              <tr><td>CPU</td><td>Cortex-M3 @ 72&nbsp;MHz</td><td>Cortex-M7 @ 480&nbsp;MHz</td></tr>
+              <tr><td>Flash / SRAM</td><td>64&nbsp;KB / 20&nbsp;KB</td><td>1&nbsp;MB / 512&nbsp;KB</td></tr>
+              <tr><td>Peripherals</td><td>F1 mapping</td><td>H7 mapping (remapped pins, new timer/ADC cores)</td></tr>
+              <tr><td>Boot</td><td>single-bank flash</td><td>dual-bank flash, vector relocation</td></tr>
+              <tr><td>Toolchain</td><td>IAR EWARM</td><td>GCC ARM (pinned, reproducible)</td></tr>
+            </table></div>
+          </div>
+
+          <div class="sec">
+            <h4>Program Design <span class="tag">in-code shape · Embedded</span></h4>
+            <ul>
+              <li><b>Module/type layout</b> — Same module graph: <code>app_control</code>, <code>app_state</code>, <code>hal_*</code>, <code>bsp_*</code>, <code>comm_modbus</code>; explicit types for states/setpoints.</li>
+              <li><b>Call trees</b> — control loop: <code>tick</code> → <code>app_control_step</code> → HAL reads → PID → actuate; comm receive: ISR → ring buffer → <code>comm_modbus</code>.</li>
+              <li><b>Dependency direction within components</b> — HAL above BSP, BSP above registers; no reverse links.</li>
+              <li><b>Testing seams &amp; strategy</b> — HAL seam enables host-side tests; target-in-the-loop harness runs on <em>both</em> old and new hardware.</li>
+              <li><b>Patterns / depth check</b> — hardware access through BSP only; state-machine pattern; SOLID/CUPID suggested (not enforced); testable-design depth check passes.</li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h4>Transition Design <span class="tag">present — behavior is preserved</span></h4>
+            <ul>
+              <li><b>Baseline behavior-and-resources evidence</b> — Field test suite pass record, timing/utilization measurements, vector/register tables, toolchain provenance captured before first slice.</li>
+              <li><b>Transition slices</b> — 1) boot + clock + LED; 2) ADC/PWM control loop; 3) comms (Modbus/HMI); 4) watchdog + safe-state; 5) full-system equivalence run on the HIL rig.</li>
+              <li><b>Platform seams</b> — HAL/BSP isolates the app from the MCU; old and new boards run in parallel rigs sharing one test harness.</li>
+              <li><b>Coexistence &amp; compatibility</b> — Separate firmware images per board, wire-identical outputs, one shared test oracle.</li>
+              <li><b>Rollback &amp; irreversible</b> — Full reflash to old board possible until factory cutover; irreversible step is field deployment.</li>
+              <li><b>Entry / exit evidence gates</b> — entry: baseline suite green on old HW; per-slice: its vectors green on new HW; exit: full suite green on new HW at identical criteria + timing budgets met.</li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h4>Embedded profile lens <span class="tag">additive concerns</span></h4>
+            <ul>
+              <li><b>Boot/vector/linker/ABI/runtime/memory</b> — dual-bank boot, vector relocation, linker-map delta, FPU/ABI choice (use soft-float to keep byte-identical math), startup/runtime init.</li>
+              <li><b>HAL/BSP/driver boundaries</b> — unchanged seam, remapped driver implementations only.</li>
+              <li><b>ISR/task/DMA shared-state matrix</b> — every shared buffer + which ISR/task touches it; volatile/atomic access rules.</li>
+              <li><b>Timing/utilization &amp; memory budgets</b> — worst-case ISR latency, CPU %, stack usage per task/ISR.</li>
+              <li><b>Cache/MPU/DMA/endian/alignment</b> — D-cache + DMA coherence, MPU regions, alignment of packed structures.</li>
+              <li><b>Watchdog &amp; safe-state</b> — independent watchdog, safe-state ladder.</li>
+              <li><b>Vendor/generated provenance</b> — CubeMX output isolated in <code>vendor/</code>, regeneration diffs recorded.</li>
+              <li><b>Reproducible toolchain evidence</b> — pinned GCC, build checksums.</li>
+              <li><b>Verification strategy</b> — host/simulator/target/HIL; old board = behavioral-equivalence oracle, new board = candidate; staged bring-up diagnostics + cutover evidence.</li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h4>What We're Not Doing</h4>
+            <ul>
+              <li>No RTOS adoption in this effort (evaluated as a future decision). No new comm protocol. No per-site field re-qualification.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ PROJECT 2 : PYTHON (MEDIUM) ============ -->
+    <div class="tab-pane" id="p2">
+      <div class="state-panel">
+        <span class="kv"><b>Scale</b>: Medium</span>
+        <span class="kv"><b>Records</b>: Effort root (Product intent) + Technical Design</span>
+        <span class="kv"><b>Layers</b>: System + Program + thin Transition</span>
+        <span class="kv"><b>Profile</b>: Python</span>
+        <span class="kv"><b>Ceremony verdict</b>: separate technical record; product intent on root — no interaction-rich product surface</span>
+      </div>
+
+      <div class="note">
+        Representative project: reworking packaging and release tooling for the <b><code>hydrant</code></b> Python CLI — moving from <code>setup.py</code>/manual releases to a <code>hatchling</code>-backed, CI-gated pipeline. Tooling change ⇒ behavior is replaced, so Transition is present but thin.
+      </div>
+
+      <!-- Effort root -->
+      <div class="record">
+        <div class="record-head">
+          <span class="chip chip-effort">Effort</span>
+          <h3>Automate hydrant packaging &amp; releases</h3>
+          <span class="meta">role: Effort (root) · carries Product intent</span>
+        </div>
+        <div class="record-body">
+          <div class="sec">
+            <h4>Product intent</h4>
+            <ul>
+              <li><b>Problem</b> — releases are manual and brittle (setup.py, hand-run publish, no locked CI).</li>
+              <li><b>Success</b> — one command ships a release; CI builds and publishes wheels/sdist; checksums verified; contributors can install from a clean checkout.</li>
+              <li><b>Behavior</b> — <code>hydrant release</code> gates on tests + lint, builds sdist + wheel, publishes to PyPI, and tags; any failure aborts before publish.</li>
+            </ul>
+          </div>
+          <div class="sec">
+            <h4>Design records</h4>
+            <ul>
+              <li><span class="chip chip-technical">design:technical</span> <b>hydrant release-pipeline technical design</b> (linked below)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Design -->
+      <div class="record">
+        <div class="record-head">
+          <span class="chip chip-technical">design:technical</span>
+          <h3>hydrant release pipeline — System / Program / Transition</h3>
+          <span class="meta">Medium materialization · Python profile</span>
+        </div>
+        <div class="record-body">
+
+          <div class="sec">
+            <h4>System Design <span class="tag">cross-component, language-neutral</span></h4>
+            <p><b>Context &amp; boundaries</b> — Repo, CI (GitHub Actions), PyPI, contributor environments. Build backend switches <code>setuptools → hatchling</code>; versioning via <code>hatch-vcs</code>.</p>
+            <p><b>Components, responsibilities, dependency direction</b> — CI pipeline (build → test → publish) → release wrapper CLI → packaging config → PyPI. Repo config owns metadata; no runtime code owns release logic.</p>
+            <p><b>Semantic &amp; temporal contracts</b> — Semver from git tags; artifact names stable (<code>hydrant-&lt;ver&gt;.tar.gz/.whl</code>); publish runs only after test + lint gates pass.</p>
+            <p><b>Quality-attribute scenarios</b> — Release attempted from a dirty tree; publish partially fails and retries; contributor without local tags still builds from checkout.</p>
+            <p><b>Constraints &amp; unknowns</b> — PyPI token handling (CI secret only); Python 3.9–3.12 support matrix; existing CI jobs must keep passing during the switch.</p>
+            <p><b>Alternatives &amp; tradeoffs</b> — hatchling vs poetry vs pdm (hatchling: lightweight, single-purpose); hatch-vcs vs setuptools-scm; CI-only vs local wrapper (wrapper kept for parity).</p>
+            <p><b>Current → target delta</b> (stated once):</p>
+            <div class="delta"><table>
+              <tr><th></th><th>Current</th><th>Target</th></tr>
+              <tr><td>Build backend</td><td>setuptools (setup.py)</td><td>hatchling (pyproject.toml)</td></tr>
+              <tr><td>Version source</td><td>manual bump</td><td>hatch-vcs from git tags</td></tr>
+              <tr><td>Publish</td><td>hand-run</td><td>CI-gated + TestPyPI dry-run</td></tr>
+              <tr><td>Local dev</td><td>pip install -e</td><td>pip install -e (unchanged)</td></tr>
+            </table></div>
+          </div>
+
+          <div class="sec">
+            <h4>Program Design <span class="tag">in-code shape · Python</span></h4>
+            <ul>
+              <li><b>Module/package layout</b> — Public <code>hydrant</code> API surface unchanged; packaging metadata fully declared in <code>pyproject.toml</code>; optional <code>hydrant.release</code> internal module for the wrapper.</li>
+              <li><b>Call trees / import direction</b> — <code>release</code> → <code>hatchling</code> build → CI publish step; tests import the public API only; no circular imports.</li>
+              <li><b>Typing strategy</b> — <code>py.typed</code> marker, mypy strict on new code.</li>
+              <li><b>Lint/format/test-harness</b> — ruff + black, pytest layout unchanged.</li>
+              <li><b>Async/concurrency</b> — CLI is synchronous; note the blocking boundary, no async needed.</li>
+              <li><b>Testing seams/strategy</b> — TestPyPI dry-run in CI; local <code>pip install -e</code> as the dev loop.</li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h4>Transition Design <span class="tag">thin — replaces existing build/release behavior</span></h4>
+            <ul>
+              <li><b>Baseline evidence</b> — current manual release steps documented; current CI job outputs captured.</li>
+              <li><b>Slices</b> — 1) pyproject conversion with no behavior change; 2) CI builds + tests on hatchling; 3) TestPyPI dry-run publishes; 4) cut over live publish + tagging.</li>
+              <li><b>Coexistence</b> — keep a <code>setup.py</code> shim until slice 4 so existing contributor docs still work.</li>
+              <li><b>Rollback &amp; irreversible</b> — revert to setuptools config before slice 4; irreversible = first PyPI release from the new backend (a published distribution).</li>
+              <li><b>Gates</b> — entry: existing CI green; exit: TestPyPI artifact installs in a fresh venv with matching checksums.</li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h4>Python profile lens <span class="tag">additive concerns</span></h4>
+            <ul>
+              <li><b>Packaging/deps</b> — hatchling, dependency groups, <code>requires-python</code> ≥ 3.9.</li>
+              <li><b>Interpreter/venv/toolchain</b> — support 3.9–3.12; dev via uv/pip.</li>
+              <li><b>Public API shape</b> — CLI unchanged; new <code>hydrant.release</code> stays internal.</li>
+              <li><b>Performance/IO/memory</b> — negligible; noted, no profiling needed.</li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h4>What We're Not Doing</h4>
+            <ul>
+              <li>No repo-wide switch to another build tool, no Rust extensions, no releasing dev tooling as a package.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ PROJECT 3 : TS/WEB (SMALL) ============ -->
+    <div class="tab-pane" id="p3">
+      <div class="state-panel">
+        <span class="kv"><b>Scale</b>: Small</span>
+        <span class="kv"><b>Records</b>: 1 — Effort root carries everything</span>
+        <span class="kv"><b>Layers</b>: concise System + Program on the root</span>
+        <span class="kv"><b>Profile</b>: TypeScript/Web (shallow)</span>
+        <span class="kv"><b>Ceremony verdict</b>: no separate records; design rides with the single Delivery Ticket</span>
+      </div>
+
+      <div class="note">
+        Representative project: adding a <b>session export</b> action to the settings page of a web app. Small, single-surface change — the whole design lives on the Effort root and its one Delivery Ticket.
+      </div>
+
+      <div class="record">
+        <div class="record-head">
+          <span class="chip chip-effort">Effort</span>
+          <h3>Session export on Settings</h3>
+          <span class="meta">role: Effort (root) · Small — no separate design records</span>
+        </div>
+        <div class="record-body">
+          <div class="sec">
+            <h4>Product intent</h4>
+            <ul>
+              <li><b>Problem</b> — users cannot download their own session data.</li>
+              <li><b>Success</b> — a Settings button downloads all visible sessions as <code>sessions.json</code>; 10k sessions export in &lt; 2&nbsp;s.</li>
+              <li><b>Behavior</b> — clicking <i>Export</i> starts a download of everything the user can see; the UI stays responsive.</li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h4>Concise System + Program design <span class="tag">on the root · TS/Web at shallow depth</span></h4>
+            <ul>
+              <li><b>System</b> — Settings page → API client (<code>getSessionsExport</code>) → <code>GET /api/sessions/export</code> → storage query. One new route, dependency direction unchanged.</li>
+              <li><b>Program</b> — one component handler on the Settings page, one API-client method, one server route, one service function that builds export rows (the test seam).</li>
+              <li><b>Type strategy</b> — reuse existing DTO types; no strictness change.</li>
+              <li><b>Client/server flow</b> — <code>fetch</code> → blob → download; one awaited call, non-blocking.</li>
+              <li><b>Build/bundler</b> — no config change; no new dependencies.</li>
+              <li><b>Testing</b> — unit-test the service function + one e2e happy path.</li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h4>Out of scope / not doing</h4>
+            <ul><li>CSV export, exporting other data types, streaming, pagination improvements.</li></ul>
+          </div>
+
+          <div class="sec">
+            <h4>Delivery</h4>
+            <ul>
+              <li>One self-contained <b>Delivery Ticket</b> (tracer bullet) carrying this design; implementation fits a single fresh context window.</li>
+            </ul>
+          </div>
+          <div class="foot">The Delivery Ticket condenses this intent; no Design Artifact records are materialized for a Small effort.</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <footer class="foot" style="margin-top:28px;">
+    Prototype for <b>wayfinder ticket #14</b> · throwaway branch <code>prototype/design-artifacts</code> · see README.md for the info pack. Built from the Product Design (#5) and Technical Design (#15) contracts of the Decision Map #1.
+  </footer>
+
+</div>
+
+<script>
+  const bar = document.getElementById('tabbar');
+  const btns = bar.querySelectorAll('.tab-btn');
+  const panes = document.querySelectorAll('.tab-pane');
+  function show(id) {
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    panes.forEach(p => p.classList.toggle('active', p.id === id));
+    const q = new URLSearchParams(location.search);
+    q.set('project', id);
+    history.replaceState(null, '', '?' + q.toString());
+  }
+  btns.forEach(b => b.addEventListener('click', () => show(b.dataset.tab)));
+  document.addEventListener('keydown', e => {
+    if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+    const cur = [...btns].findIndex(b => b.classList.contains('active'));
+    if (e.key === 'ArrowRight') show(btns[(cur + 1) % btns.length].dataset.tab);
+    if (e.key === 'ArrowLeft') show(btns[(cur - 1 + btns.length) % btns.length].dataset.tab);
+  });
+  const initial = new URLSearchParams(location.search).get('project');
+  if (initial && document.getElementById(initial)) show(initial);
+</script>
+</body>
+</html>
