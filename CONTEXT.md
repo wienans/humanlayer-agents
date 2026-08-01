@@ -56,7 +56,7 @@ A removable Technical Design layer that owns the migration and cutover path when
 A progressively disclosed, additive Technical Design lens that injects domain-specific concerns, vocabulary, and views into the language-neutral core without forking it. Profile lenses compose; the default Embedded, Python, and TypeScript lenses are selected by the stack an Effort touches and overridable by the human.
 
 **Delivery Ticket**:
-A self-contained tracer bullet that condenses approved upstream intent into an implementation contract. Its implementation fits a single fresh context window and delivers a narrow, complete, independently verifiable path; an Effort may have multiple Delivery Tickets whose blocking graph forms incremental delivery phases. _Avoid_: implementation ticket, unqualified "ticket".
+A separate child tracker record containing a self-contained, source-free snapshot of one tracer bullet's implementation contract. It condenses all necessary approved upstream intent without source links or requirement-level traceability, fits a single fresh context window, and delivers a narrow, complete, independently verifiable path; every Effort has at least one Delivery Ticket, and their blocking graph forms incremental delivery phases. _Avoid_: implementation ticket, unqualified "ticket".
 
 **Evidence**:
 Research, prototype, test, or validation material that establishes facts supporting a decision or design. Evidence informs intent but does not own it.
