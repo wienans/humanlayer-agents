@@ -1,0 +1,1114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workflow at three scales | Throwaway prototype</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #65727d;
+      --paper: #f7f8f5;
+      --card: #ffffff;
+      --line: #dce3e1;
+      --accent: #0b7168;
+      --accent-soft: #e2f2ee;
+      --warm: #c66a32;
+      --warm-soft: #fff0e6;
+      --quiet: #eef2f0;
+      --shadow: 0 16px 38px rgba(29, 48, 48, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at top right, rgba(226, 242, 238, 0.85), transparent 36rem),
+        var(--paper);
+    }
+
+    button { font: inherit; }
+
+    .shell {
+      width: min(1440px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 42px 0 64px;
+    }
+
+    .masthead {
+      max-width: 920px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 13px;
+      color: var(--accent);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 850px;
+      margin-bottom: 15px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.35rem, 5vw, 4.8rem);
+      font-weight: 500;
+      letter-spacing: -0.055em;
+      line-height: 0.98;
+    }
+
+    .lede {
+      max-width: 780px;
+      margin-bottom: 21px;
+      color: #43515c;
+      font-size: clamp(1rem, 1.7vw, 1.2rem);
+      line-height: 1.6;
+    }
+
+    .question {
+      max-width: 830px;
+      padding: 16px 19px;
+      border-left: 4px solid var(--accent);
+      background: rgba(255, 255, 255, 0.74);
+      color: #33434c;
+      line-height: 1.55;
+      box-shadow: 0 8px 24px rgba(29, 48, 48, 0.04);
+    }
+
+    .question strong { color: var(--ink); }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .toolbar-note {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .button {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 13px;
+      cursor: pointer;
+      background: var(--card);
+      color: var(--ink);
+      font-size: 0.88rem;
+      font-weight: 700;
+      transition: border-color 130ms ease, background 130ms ease, transform 130ms ease;
+    }
+
+    .button:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .button:focus-visible { outline: 3px solid rgba(11, 113, 104, 0.24); outline-offset: 2px; }
+    .button.primary { border-color: var(--accent); background: var(--accent); color: white; }
+    .button.soft { border-color: #c8e5de; background: var(--accent-soft); color: #075b54; }
+    .button.warm { border-color: #f0c5a9; background: var(--warm-soft); color: #8c421d; }
+    .button.small { padding: 7px 10px; font-size: 0.8rem; }
+
+    .state-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: white;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .state-badge::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--warm);
+      content: "";
+    }
+
+    .state-badge.ready::before { background: var(--accent); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.8fr);
+      gap: 19px;
+      align-items: start;
+    }
+
+    .primary, .sidebar { display: grid; gap: 19px; }
+
+    .card {
+      border: 1px solid rgba(220, 227, 225, 0.98);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.91);
+      box-shadow: var(--shadow);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 18px;
+      border-bottom: 1px solid var(--line);
+      padding: 21px 23px 17px;
+    }
+
+    .card-head h2 { margin-bottom: 5px; font-size: 1.14rem; }
+    .card-head p { margin-bottom: 0; color: var(--muted); font-size: 0.87rem; line-height: 1.45; }
+    .card-body { padding: 21px 23px 24px; }
+
+    .current-moment {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.8fr);
+      gap: 14px;
+      margin-bottom: 21px;
+    }
+
+    .moment-box {
+      min-height: 90px;
+      border-radius: 9px;
+      padding: 15px;
+      background: var(--quiet);
+    }
+
+    .moment-box.accent { background: var(--accent-soft); }
+    .moment-label { margin-bottom: 7px; color: var(--muted); font-size: 0.71rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .moment-value { margin: 0; font-size: 1rem; font-weight: 750; line-height: 1.35; }
+    .moment-detail { margin: 5px 0 0; color: #586771; font-size: 0.82rem; line-height: 1.45; }
+
+    .artifact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .artifact {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 13px 14px;
+      background: #fbfcfb;
+    }
+
+    .artifact h3 { margin-bottom: 7px; font-size: 0.92rem; }
+    .artifact p { margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.45; }
+    .status { display: inline-block; margin-bottom: 7px; color: var(--accent); font-size: 0.7rem; font-weight: 850; letter-spacing: 0.09em; text-transform: uppercase; }
+    .status.pending { color: var(--muted); }
+    .status.warn { color: var(--warm); }
+
+    .action-groups { display: grid; gap: 19px; }
+    .action-group h3 { margin-bottom: 9px; font-size: 0.9rem; }
+    .action-group p { margin-bottom: 11px; color: var(--muted); font-size: 0.82rem; line-height: 1.45; }
+    .action-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .guided-tabs {
+      display: flex;
+      gap: 7px;
+      border-bottom: 1px solid var(--line);
+      padding: 0 23px;
+    }
+
+    .tab {
+      border: 0;
+      border-bottom: 3px solid transparent;
+      padding: 13px 10px 11px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .tab:hover { color: var(--ink); }
+    .tab.active { border-bottom-color: var(--accent); color: var(--accent); }
+    .tab:focus-visible { outline: 3px solid rgba(11, 113, 104, 0.24); outline-offset: -2px; }
+
+    .scenario-copy { margin-bottom: 18px; }
+    .scenario-copy h3 { margin-bottom: 7px; font-size: 1.08rem; }
+    .scenario-copy p { max-width: 760px; margin-bottom: 0; color: #586771; font-size: 0.87rem; line-height: 1.55; }
+
+    .steps { display: grid; gap: 7px; }
+    .step {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #fbfcfb;
+    }
+
+    .step-number {
+      display: grid;
+      place-items: center;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: var(--quiet);
+      color: var(--muted);
+      font-size: 0.73rem;
+      font-weight: 850;
+    }
+
+    .step.done { border-color: #b9ddd4; background: #f4fbf9; }
+    .step.done .step-number { background: var(--accent); color: white; }
+    .step.current { border-color: #e9bd9f; background: #fffaf6; }
+    .step.current .step-number { background: var(--warm); color: white; }
+    .step-label { font-size: 0.82rem; font-weight: 700; }
+    .step-note { margin-top: 2px; color: var(--muted); font-size: 0.74rem; line-height: 1.35; }
+    .step-check { color: var(--accent); font-size: 0.74rem; font-weight: 800; }
+
+    .sidebar .card-head { padding: 17px 18px 14px; }
+    .sidebar .card-head h2 { font-size: 1rem; }
+    .sidebar .card-body { padding: 17px 18px 19px; }
+
+    .check-list, .authority-list, .event-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+    .check-item { display: grid; grid-template-columns: 19px minmax(0, 1fr); gap: 9px; align-items: start; }
+    .check-mark { display: grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; background: var(--quiet); color: var(--muted); font-size: 0.7rem; font-weight: 900; }
+    .check-mark.pass { background: var(--accent-soft); color: var(--accent); }
+    .check-mark.watch { background: var(--warm-soft); color: var(--warm); }
+    .check-item strong { display: block; margin-bottom: 2px; font-size: 0.79rem; }
+    .check-item span { color: var(--muted); font-size: 0.73rem; line-height: 1.38; }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 17px; }
+    .metric { border-radius: 8px; padding: 10px; background: var(--quiet); }
+    .metric-value { display: block; margin-bottom: 3px; font-size: 1.22rem; font-weight: 800; }
+    .metric-label { color: var(--muted); font-size: 0.69rem; line-height: 1.25; }
+
+    .authority-item { border-bottom: 1px solid #edf0ef; padding-bottom: 9px; }
+    .authority-item:last-child { border-bottom: 0; padding-bottom: 0; }
+    .authority-item strong { display: block; margin-bottom: 3px; font-size: 0.78rem; }
+    .authority-item span { display: block; color: var(--muted); font-size: 0.73rem; line-height: 1.4; }
+
+    .event-list { max-height: 350px; overflow: auto; }
+    .event { border-left: 2px solid var(--line); padding: 2px 0 2px 10px; }
+    .event.changed { border-left-color: var(--accent); }
+    .event small { display: block; margin-bottom: 3px; color: var(--muted); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+    .event p { margin: 0; color: #46555f; font-size: 0.76rem; line-height: 1.42; }
+
+    .footnote { margin: 19px 2px 0; color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
+    .footnote strong { color: var(--ink); }
+
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 1fr; }
+      .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+      .sidebar .card:last-child { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 24px, 1440px); padding-top: 28px; }
+      h1 { font-size: 2.65rem; }
+      .toolbar { align-items: start; flex-direction: column-reverse; }
+      .current-moment, .artifact-grid, .sidebar { grid-template-columns: 1fr; }
+      .sidebar .card:last-child { grid-column: auto; }
+      .card-head, .card-body { padding-left: 16px; padding-right: 16px; }
+      .guided-tabs { padding: 0 16px; overflow-x: auto; }
+      .tab { white-space: nowrap; }
+      .step { grid-template-columns: 26px minmax(0, 1fr); }
+      .step .button, .step-check { grid-column: 2; justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <p class="eyebrow">Throwaway logic prototype / Wayfinder #13</p>
+      <h1>Can the workflow keep its promises at every scale?</h1>
+      <p class="lede">Push the same engineering outcome through Small, Medium, and Large paths. Watch which artifact owns each concern, where human control appears, and whether a later step can move forward without asking an already-settled question again.</p>
+      <div class="question"><strong>Question being tested:</strong> Does a paper or throwaway execution of the proposed Small, Medium, and Large paths preserve decisions, architecture, context, and human control while avoiding repeated research, grilling, decomposition, and review?</div>
+    </header>
+
+    <div class="toolbar">
+      <span class="toolbar-note">Every button is explicit. Nothing advances merely because a draft exists.</span>
+      <div>
+        <button class="button small" id="reset-button" type="button">Reset free play</button>
+        <span class="state-badge" id="scale-badge">Scale not chosen</span>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <div class="primary">
+        <section class="card" aria-labelledby="state-title">
+          <div class="card-head">
+            <div>
+              <h2 id="state-title">Current workflow state</h2>
+              <p>The full state is rendered after every action so awkward transitions are visible.</p>
+            </div>
+          </div>
+          <div class="card-body" id="current-state"></div>
+        </section>
+
+        <section class="card" aria-labelledby="actions-title">
+          <div class="card-head">
+            <div>
+              <h2 id="actions-title">Free play</h2>
+              <p>Try actions out of order. An invalid action is recorded instead of being silently allowed.</p>
+            </div>
+          </div>
+          <div class="card-body action-groups" id="free-play"></div>
+        </section>
+
+        <section class="card" aria-labelledby="guided-title">
+          <div class="card-head">
+            <div>
+              <h2 id="guided-title">Guided walkthroughs</h2>
+              <p>Each scenario resets to a known state. The next step is a real button, not an automatic transition.</p>
+            </div>
+          </div>
+          <div class="guided-tabs" role="tablist" aria-label="Workflow scale scenarios">
+            <button class="tab active" data-scenario="small" role="tab" type="button">Small / bounded</button>
+            <button class="tab" data-scenario="medium" role="tab" type="button">Medium / existing behavior</button>
+            <button class="tab" data-scenario="large" role="tab" type="button">Large / uncertain</button>
+          </div>
+          <div class="card-body" id="guided-content"></div>
+        </section>
+
+        <p class="footnote"><strong>Prototype only:</strong> the reducer in this file is the part worth lifting if the model survives review. The page, styling, labels, and in-memory records are disposable.</p>
+      </div>
+
+      <aside class="sidebar">
+        <section class="card" aria-labelledby="checks-title">
+          <div class="card-head">
+            <div>
+              <h2 id="checks-title">Continuity checks</h2>
+              <p>Signals that the workflow is keeping its boundaries.</p>
+            </div>
+          </div>
+          <div class="card-body" id="checks"></div>
+        </section>
+
+        <section class="card" aria-labelledby="authority-title">
+          <div class="card-head">
+            <div>
+              <h2 id="authority-title">Who owns what?</h2>
+              <p>Concern authority is separate from tracker mechanics.</p>
+            </div>
+          </div>
+          <div class="card-body" id="authority"></div>
+        </section>
+
+        <section class="card" aria-labelledby="log-title">
+          <div class="card-head">
+            <div>
+              <h2 id="log-title">Action history</h2>
+              <p>Recent events, including rejected repeats.</p>
+            </div>
+          </div>
+          <div class="card-body" id="event-log"></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    // Portable logic module. It deliberately has no DOM or browser dependencies.
+    const Workflow = (() => {
+      const labels = {
+        unclassified: "Scale not chosen",
+        small: "Small",
+        medium: "Medium",
+        large: "Large"
+      };
+
+      const phaseLabels = {
+        orientation: "Orientation",
+        research: "Research",
+        decisions: "Decision frontier",
+        product: "Product Design",
+        technical: "Technical Design",
+        delivery: "Delivery Tickets",
+        implementation: "Implementation",
+        verification: "Verification",
+        pr: "PR and review",
+        complete: "Complete"
+      };
+
+      function initialState() {
+        return {
+          scale: "unclassified",
+          phase: "orientation",
+          lastChange: "Choose a scale or start a guided walkthrough.",
+          effort: { status: "not started", name: "No Effort yet", promoted: false },
+          reconnaissance: { status: "not started", facts: [], risk: "unknown" },
+          research: { questions: "not needed", status: "not run", rounds: 0, evidence: [] },
+          decisionMap: { status: "not needed", openTickets: 0, resolvedDecisions: [], frontierRounds: 0 },
+          design: {
+            context: "not linked",
+            product: "not started",
+            productForm: "",
+            technical: "not started",
+            layers: [],
+            profiles: [],
+            approval: []
+          },
+          delivery: { status: "not started", tickets: [], current: "", decompositionPasses: 0 },
+          implementation: {
+            status: "not started",
+            claimed: false,
+            worker: "",
+            verification: "not started",
+            manualGate: "not required",
+            commits: 0
+          },
+          pr: { status: "not started", review: "not run", reviewPasses: 0, findings: [], selectedFinding: "" },
+          humanStarts: [],
+          metrics: {
+            researchRuns: 0,
+            frontierRounds: 0,
+            decompositionPasses: 0,
+            reviewRuns: 0,
+            suppressedDuplicates: 0
+          },
+          history: []
+        };
+      }
+
+      function event(state, action, message, patch) {
+        return {
+          ...state,
+          ...patch,
+          lastChange: message,
+          history: [...state.history, { action, message, changed: true }]
+        };
+      }
+
+      function rejected(state, action, message) {
+        return {
+          ...state,
+          lastChange: "No change: " + message,
+          metrics: { ...state.metrics, suppressedDuplicates: state.metrics.suppressedDuplicates + 1 },
+          history: [...state.history, { action, message: "Rejected: " + message, changed: false }]
+        };
+      }
+
+      function effortIsActive(state) {
+        return state.effort.status === "active";
+      }
+
+      function needsResearch(state) {
+        return state.scale === "medium" || state.scale === "large";
+      }
+
+      function currentTicket(state) {
+        return state.delivery.tickets.find((ticket) => ticket.id === state.delivery.current);
+      }
+
+      function replaceCurrentTicket(state, changes) {
+        return state.delivery.tickets.map((ticket) => ticket.id === state.delivery.current ? { ...ticket, ...changes } : ticket);
+      }
+
+      function completeCurrentTicket(state) {
+        const completed = new Set(state.delivery.tickets.filter((ticket) => ticket.status === "done").map((ticket) => ticket.id));
+        completed.add(state.delivery.current);
+        return state.delivery.tickets.map((ticket) => {
+          if (ticket.id === state.delivery.current) return { ...ticket, status: "done" };
+          if (ticket.status === "blocked" && ticket.blockedBy.every((blocker) => completed.has(blocker))) {
+            return { ...ticket, status: "open" };
+          }
+          return ticket;
+        });
+      }
+
+      function reduce(state, action) {
+        const type = action.type;
+
+        if (type === "SET_SCALE") {
+          if (!["small", "medium", "large"].includes(action.scale)) return rejected(state, type, "That is not a workflow scale.");
+          if (effortIsActive(state) && state.scale !== action.scale) return rejected(state, type, "The scale cannot change after the Effort starts; promote Small through the explicit risk path instead.");
+          return event(state, type, "Selected the " + labels[action.scale] + " path.", {
+            scale: action.scale,
+            research: { ...state.research, questions: needsResearch({ ...state, scale: action.scale }) ? "required" : "not needed" },
+            decisionMap: { ...state.decisionMap, status: action.scale === "large" ? "not opened" : "not needed" }
+          });
+        }
+
+        if (type === "START_EFFORT") {
+          if (state.scale === "unclassified") return rejected(state, type, "Choose Small, Medium, or Large before starting the Effort.");
+          if (effortIsActive(state)) return rejected(state, type, "The Effort already exists; the workflow does not create a second root.");
+          return event(state, type, "Started one Effort with an explicit scale and one continuous identity.", {
+            phase: "orientation",
+            effort: { status: "active", name: "Replace the shipping report", promoted: false },
+            design: { ...state.design, context: "linked from Domain Documentation" }
+          });
+        }
+
+        if (type === "CAPTURE_RECON") {
+          if (!effortIsActive(state)) return rejected(state, type, "Reconnaissance belongs to a started Effort.");
+          if (state.reconnaissance.status === "captured") return rejected(state, type, "Bounded reconnaissance is already captured; do not repeat it as research.");
+          return event(state, type, "Captured bounded orientation facts, risks, and unknowns without choosing a design.", {
+            phase: needsResearch(state) ? "research" : "product",
+            reconnaissance: { status: "captured", risk: state.scale === "small" ? "bounded" : "material", facts: ["current behavior", "affected boundary", "unknowns and risks"] }
+          });
+        }
+
+        if (type === "PROMOTE_TO_MEDIUM") {
+          if (state.scale !== "small") return rejected(state, type, "Only Small work can take the explicit promotion path.");
+          if (state.reconnaissance.status !== "captured") return rejected(state, type, "Capture bounded reconnaissance before judging whether the risk crosses the Small threshold.");
+          return event(state, type, "A risk crossed the Small threshold; promoted the same Effort to Medium without losing its context.", {
+            scale: "medium",
+            phase: "research",
+            effort: { ...state.effort, promoted: true },
+            research: { ...state.research, questions: "required" }
+          });
+        }
+
+        if (type === "OPEN_DECISION_MAP") {
+          if (state.scale !== "large") return rejected(state, type, "A Decision Map is reserved for Large uncertainty in this model.");
+          if (state.reconnaissance.status !== "captured") return rejected(state, type, "Open the Decision Map after bounded reconnaissance makes the uncertainty visible.");
+          if (state.decisionMap.status === "open") return rejected(state, type, "The Decision Map is already open; its frontier is the durable planning record.");
+          return event(state, type, "Opened one Decision Map for consequential uncertainty and ownership.", {
+            phase: "decisions",
+            decisionMap: { ...state.decisionMap, status: "open", openTickets: 2 }
+          });
+        }
+
+        if (type === "CREATE_RESEARCH_QUESTIONS") {
+          if (!effortIsActive(state) || !needsResearch(state)) return rejected(state, type, "Research Questions are required only for Medium and Large paths.");
+          if (state.reconnaissance.status !== "captured") return rejected(state, type, "Bounded reconnaissance comes before source-agnostic Research Questions.");
+          if (state.research.questions === "ready") return rejected(state, type, "Research Questions already describe the objective query plan.");
+          return event(state, type, "Created objective Research Questions without revealing a preferred change.", {
+            phase: state.scale === "large" ? "decisions" : "research",
+            research: { ...state.research, questions: "ready" }
+          });
+        }
+
+        if (type === "RUN_RESEARCH") {
+          if (!needsResearch(state)) return rejected(state, type, "Small work uses bounded reconnaissance until a human promotes it.");
+          if (state.research.questions !== "ready") return rejected(state, type, "Create Research Questions before running source-agnostic Research.");
+          if (state.research.status === "synthesized") return rejected(state, type, "Research is already synthesized; later steps consume its evidence instead of repeating it.");
+          return event(state, type, "Synthesized cited evidence once from the Research Questions.", {
+            phase: state.scale === "large" ? "decisions" : "product",
+            research: { ...state.research, status: "synthesized", rounds: 1, evidence: ["current behavior evidence", "boundary evidence", "risk evidence"] },
+            metrics: { ...state.metrics, researchRuns: state.metrics.researchRuns + 1 }
+          });
+        }
+
+        if (type === "RESOLVE_DECISIONS") {
+          if (state.scale !== "large") return rejected(state, type, "The Decision Map frontier exists only on the Large path.");
+          if (state.decisionMap.status !== "open") return rejected(state, type, "Open the Decision Map before resolving its frontier.");
+          if (state.research.status !== "synthesized") return rejected(state, type, "Resolve the frontier from evidence, not from an unresearched hunch.");
+          if (state.decisionMap.resolvedDecisions.length > 0) return rejected(state, type, "The frontier is already resolved; Product and Technical Design should synthesize it, not re-grill it.");
+          return event(state, type, "Resolved the current decision frontier in one whole-frontier round.", {
+            phase: "product",
+            decisionMap: { ...state.decisionMap, status: "resolved", openTickets: 0, resolvedDecisions: ["scope boundary", "human approval threshold"], frontierRounds: 1 },
+            metrics: { ...state.metrics, frontierRounds: state.metrics.frontierRounds + 1 }
+          });
+        }
+
+        if (type === "SYNTHESIZE_PRODUCT") {
+          if (!effortIsActive(state)) return rejected(state, type, "Start the Effort before creating Product intent.");
+          if (state.reconnaissance.status !== "captured") return rejected(state, type, "Product intent is synthesized after bounded orientation.");
+          if (needsResearch(state) && state.research.status !== "synthesized") return rejected(state, type, "Medium and Large Product Design consumes completed Research.");
+          if (state.scale === "large" && state.decisionMap.resolvedDecisions.length === 0) return rejected(state, type, "Large Product Design consumes resolved Decision Tickets instead of re-asking them.");
+          if (state.design.product === "draft") return rejected(state, type, "Product intent is already drafted; use Start Next Workflow Step to express human approval.");
+          return event(state, type, "Synthesized Product intent from the existing evidence, decisions, and context.", {
+            phase: "product",
+            design: { ...state.design, product: "draft", productForm: state.scale === "small" ? "concise Product intent on the Effort root" : "separate Product Design artifact" }
+          });
+        }
+
+        if (type === "DESIGN_TECHNICAL") {
+          if (state.design.product !== "approved") return rejected(state, type, "Start the next workflow step to approve Product intent before drafting Technical Design.");
+          if (state.design.technical === "draft") return rejected(state, type, "Technical Design is already drafted; it is not a second grilling round.");
+          return event(state, type, "Drafted implementation intent in System, Program, and (where needed) Transition layers.", {
+            phase: "technical",
+            design: {
+              ...state.design,
+              technical: "draft",
+              layers: state.scale === "small" ? ["System", "Program"] : ["System", "Program", "Transition"],
+              profiles: state.scale === "small" ? ["TypeScript"] : ["TypeScript", "behavior-preservation lens"]
+            }
+          });
+        }
+
+        if (type === "CREATE_DELIVERY_TICKETS") {
+          if (state.design.technical !== "approved") return rejected(state, type, "Start the next workflow step to approve Technical Design before decomposing delivery.");
+          if (state.delivery.tickets.length > 0) return rejected(state, type, "Delivery Tickets already contain the tracer-bullet decomposition; do not decompose it again.");
+          const count = state.scale === "small" ? 1 : state.scale === "medium" ? 2 : 3;
+          const tickets = Array.from({ length: count }, (_, index) => ({
+            id: "D-" + (index + 1),
+            name: index === 0 ? "Replace report generation boundary" : index === 1 ? "Move compatibility seam" : "Cut over and remove fallback",
+            blockedBy: index === 0 ? [] : ["D-" + index],
+            status: index === 0 ? "open" : "blocked",
+            snapshot: "self-contained Product + Technical snapshot"
+          }));
+          return event(state, type, "Created one source-free tracer-bullet snapshot per delivery path, with blockers visible.", {
+            phase: "delivery",
+            delivery: { status: "draft", tickets, current: "D-1", decompositionPasses: 1 },
+            metrics: { ...state.metrics, decompositionPasses: state.metrics.decompositionPasses + 1 }
+          });
+        }
+
+        if (type === "START_NEXT_STEP") {
+          if (state.design.product === "draft") return event(state, type, "Human started Technical Design; Product intent is implicitly accepted without a duplicate sign-off ceremony.", {
+            phase: "technical",
+            design: { ...state.design, product: "approved", approval: [...state.design.approval, "Product intent accepted by starting Technical Design"] },
+            humanStarts: [...state.humanStarts, "Product -> Technical"]
+          });
+          if (state.design.technical === "draft") return event(state, type, "Human started Delivery Ticket creation; Technical Design is implicitly accepted at the workflow boundary.", {
+            phase: "delivery",
+            design: { ...state.design, technical: "approved", approval: [...state.design.approval, "Technical Design accepted by starting Delivery"] },
+            humanStarts: [...state.humanStarts, "Technical -> Delivery"]
+          });
+          if (state.delivery.status === "draft") return event(state, type, "Human started implementation; the Delivery Ticket snapshot is now the execution contract.", {
+            phase: "implementation",
+            delivery: { ...state.delivery, status: "approved" },
+            humanStarts: [...state.humanStarts, "Delivery -> Implementation"]
+          });
+          if (state.implementation.verification === "passed" && (state.pr.status === "not started" || state.pr.status === "ready")) return event(state, type, state.pr.status === "ready" ? "Human resumed PR preparation after the selected fix; review was not restarted automatically." : "Human started PR preparation after verification; no automatic handoff skipped the gate.", {
+            phase: "pr",
+            humanStarts: [...state.humanStarts, "Verification -> PR"]
+          });
+          if (state.pr.review === "passed") return event(state, type, "Human accepted the reviewed change; the workflow is complete.", { phase: "complete" });
+          return rejected(state, type, "There is no pending phase boundary that this action can approve.");
+        }
+
+        if (type === "CLAIM_DELIVERY") {
+          if (state.delivery.status !== "approved") return rejected(state, type, "Start implementation before claiming a Delivery Ticket.");
+          const ticket = currentTicket(state);
+          if (!ticket) return rejected(state, type, "Create Delivery Tickets before claiming the current one.");
+          if (ticket.status === "done") return rejected(state, type, "That Delivery Ticket is already complete.");
+          if (state.implementation.claimed) return rejected(state, type, "One implementation run already owns the current Delivery Ticket.");
+          return event(state, type, "Claimed one Delivery Ticket for one implementation authority.", {
+            implementation: { ...state.implementation, claimed: true, worker: "fresh Delivery Ticket worker" },
+            delivery: { ...state.delivery, tickets: replaceCurrentTicket(state, { status: "claimed" }) }
+          });
+        }
+
+        if (type === "IMPLEMENT") {
+          const ticket = currentTicket(state);
+          if (!state.implementation.claimed) return rejected(state, type, "Claim the current Delivery Ticket before implementation.");
+          if (!ticket) return rejected(state, type, "There is no current Delivery Ticket to implement.");
+          if (state.implementation.status === "implemented" && state.pr.status !== "rerun requested") return rejected(state, type, "This Delivery Ticket already has an implementation; verification comes next.");
+          return event(state, type, state.implementation.commits === 0 ? "The fresh worker implemented one tracer bullet test-first." : "The worker applied the human-selected review finding; no automatic review loop changed the code.", {
+            phase: "verification",
+            implementation: { ...state.implementation, status: "implemented", verification: "not started", manualGate: "not required", commits: state.implementation.commits + 1 },
+            delivery: { ...state.delivery, tickets: replaceCurrentTicket(state, { status: "in progress" }) },
+            pr: { ...state.pr, status: state.pr.status === "rerun requested" ? "ready" : state.pr.status }
+          });
+        }
+
+        if (type === "REQUEST_MANUAL_GATE") {
+          if (state.implementation.status !== "implemented") return rejected(state, type, "A manual gate is only meaningful after code-changing execution.");
+          if (state.implementation.manualGate === "required") return rejected(state, type, "The required manual verification gate is already waiting for a human.");
+          return event(state, type, "A consequential mismatch requires human verification; the automated flow pauses instead of deciding.", {
+            phase: "verification",
+            implementation: { ...state.implementation, manualGate: "required", verification: "waiting for human" }
+          });
+        }
+
+        if (type === "PASS_MANUAL_GATE") {
+          if (state.implementation.manualGate !== "required") return rejected(state, type, "No manual verification gate is waiting.");
+          return event(state, type, "Human completed the consequential manual verification gate.", {
+            implementation: { ...state.implementation, manualGate: "passed", verification: "ready for verification" },
+            humanStarts: [...state.humanStarts, "Manual verification gate"]
+          });
+        }
+
+        if (type === "VERIFY") {
+          if (state.implementation.status !== "implemented") return rejected(state, type, "Implementation must exist before verification.");
+          if (state.implementation.manualGate === "required") return rejected(state, type, "The workflow is paused until the human completes the manual verification gate.");
+          if (state.implementation.verification === "passed") return rejected(state, type, "Verification is already recorded once for this implementation run.");
+          return event(state, type, "Independent verification passed and was recorded once for this implementation run.", {
+            phase: "verification",
+            implementation: { ...state.implementation, verification: "passed" },
+            delivery: { ...state.delivery, tickets: completeCurrentTicket(state) }
+          });
+        }
+
+        if (type === "DESCRIBE_PR") {
+          if (state.implementation.verification !== "passed") return rejected(state, type, "Describe the PR only after verification is recorded.");
+          if (state.pr.status === "described") return rejected(state, type, "The reviewer-facing PR package is already current.");
+          return event(state, type, "Prepared the reviewer-facing PR package without merging explanation into implementation or review.", {
+            phase: "pr",
+            pr: { ...state.pr, status: "described", review: "ready" }
+          });
+        }
+
+        if (type === "RUN_REVIEW") {
+          if (state.pr.status !== "described" && state.pr.status !== "ready") return rejected(state, type, "Create or refresh the PR package before running independent review.");
+          if (state.pr.review === "passed") return rejected(state, type, "This fixed-point review already passed; only a human-selected return to implementation can request another review.");
+          const hasFinding = state.scale === "large" && state.pr.reviewPasses === 0;
+          return event(state, type, hasFinding ? "Independent review found one spec deviation; it is waiting for human selection." : "Independent review found no selected findings.", {
+            phase: "pr",
+            pr: { ...state.pr, review: hasFinding ? "finding available" : "passed", reviewPasses: state.pr.reviewPasses + 1, findings: hasFinding ? ["Transition fallback is not covered by the Delivery Ticket snapshot"] : [] },
+            metrics: { ...state.metrics, reviewRuns: state.metrics.reviewRuns + 1 }
+          });
+        }
+
+        if (type === "SELECT_REVIEW_FINDING") {
+          if (state.pr.review !== "finding available" || state.pr.findings.length === 0) return rejected(state, type, "There is no review finding waiting for human selection.");
+          return event(state, type, "Human selected the review finding to return to implementation; review did not mutate code on its own.", {
+            pr: { ...state.pr, selectedFinding: state.pr.findings[0] },
+            humanStarts: [...state.humanStarts, "Selected review finding"]
+          });
+        }
+
+        if (type === "RETURN_TO_IMPLEMENT") {
+          if (!state.pr.selectedFinding) return rejected(state, type, "Select a review finding before returning it to implementation.");
+          return event(state, type, "Returned only the selected finding to the existing implementation authority.", {
+            phase: "implementation",
+            implementation: { ...state.implementation, status: "awaiting selected fix", verification: "not started" },
+            delivery: { ...state.delivery, tickets: replaceCurrentTicket(state, { status: "in progress" }) },
+            pr: { ...state.pr, status: "rerun requested", review: "not run", findings: [], selectedFinding: "" }
+          });
+        }
+
+        return rejected(state, type, "That action is not part of this prototype.");
+      }
+
+      function derive(state) {
+        const ticket = currentTicket(state);
+        const continuity = [
+          {
+            label: "Decision continuity",
+            state: state.scale === "large" ? state.decisionMap.resolvedDecisions.length > 0 : state.effort.status === "active",
+            detail: state.scale === "large" ? (state.decisionMap.resolvedDecisions.length > 0 ? "Resolved decisions are available to downstream design." : "Large work has not yet resolved its frontier.") : "The bounded path keeps one Effort identity without inventing a Decision Map."
+          },
+          {
+            label: "Architecture continuity",
+            state: state.design.technical === "approved" || state.delivery.tickets.length > 0,
+            detail: state.delivery.tickets.length > 0 ? "Delivery snapshots carry the approved Product and Technical intent." : "Technical Design has not yet been accepted into delivery."
+          },
+          {
+            label: "Context continuity",
+            state: state.design.context === "linked from Domain Documentation",
+            detail: state.design.context === "linked from Domain Documentation" ? "Domain Documentation is linked without becoming a product or delivery duplicate." : "No Effort context is linked yet."
+          },
+          {
+            label: "Human control",
+            state: state.humanStarts.length > 0 || state.scale === "unclassified",
+            detail: state.implementation.manualGate === "required" ? "The automated path is paused at a consequential human gate." : "Workflow boundaries advance only through explicit human actions."
+          },
+          {
+            label: "No repeat loop",
+            state: state.metrics.suppressedDuplicates === 0,
+            detail: state.metrics.suppressedDuplicates === 0 ? "No duplicate action has been attempted." : state.metrics.suppressedDuplicates + " repeated or out-of-order action(s) were blocked and recorded."
+          }
+        ];
+
+        return {
+          phase: phaseLabels[state.phase],
+          scale: labels[state.scale],
+          ticket,
+          continuity,
+          metrics: [
+            [state.metrics.researchRuns, "Research runs"],
+            [state.metrics.frontierRounds, "Frontier rounds"],
+            [state.metrics.decompositionPasses, "Decompositions"],
+            [state.metrics.reviewRuns, "Review runs"],
+            [state.humanStarts.length, "Human starts"],
+            [state.metrics.suppressedDuplicates, "Blocked repeats"]
+          ]
+        };
+      }
+
+      return { initialState, reduce, derive, labels, phaseLabels };
+    })();
+
+    const actionGroups = [
+      {
+        title: "Set up the Effort",
+        description: "Choose an adaptive path, start its continuous identity, and capture bounded orientation.",
+        actions: [
+          ["SET_SCALE", "Choose Small", { scale: "small" }, "soft"],
+          ["SET_SCALE", "Choose Medium", { scale: "medium" }, "soft"],
+          ["SET_SCALE", "Choose Large", { scale: "large" }, "soft"],
+          ["START_EFFORT", "Start Effort", {}, "primary"],
+          ["CAPTURE_RECON", "Capture reconnaissance", {}, ""],
+          ["PROMOTE_TO_MEDIUM", "Promote Small to Medium", {}, "warm"]
+        ]
+      },
+      {
+        title: "Evidence and decisions",
+        description: "Research is objective evidence; the Large frontier is where consequential choices are owned.",
+        actions: [
+          ["OPEN_DECISION_MAP", "Open Decision Map", {}, ""],
+          ["CREATE_RESEARCH_QUESTIONS", "Create Research Questions", {}, ""],
+          ["RUN_RESEARCH", "Run Research", {}, ""],
+          ["RESOLVE_DECISIONS", "Resolve decision frontier", {}, "soft"]
+        ]
+      },
+      {
+        title: "Design and delivery",
+        description: "Synthesize settled context, then make one source-free Delivery Ticket snapshot per tracer bullet.",
+        actions: [
+          ["SYNTHESIZE_PRODUCT", "Synthesize Product intent", {}, ""],
+          ["DESIGN_TECHNICAL", "Draft Technical Design", {}, ""],
+          ["CREATE_DELIVERY_TICKETS", "Create Delivery Tickets", {}, "soft"],
+          ["START_NEXT_STEP", "Start Next Workflow Step", {}, "primary"]
+        ]
+      },
+      {
+        title: "Implement, verify, review",
+        description: "One implementation authority changes code; review findings return only when a human selects them.",
+        actions: [
+          ["CLAIM_DELIVERY", "Claim current Delivery Ticket", {}, ""],
+          ["IMPLEMENT", "Implement tracer bullet", {}, "primary"],
+          ["REQUEST_MANUAL_GATE", "Require manual verification", {}, "warm"],
+          ["PASS_MANUAL_GATE", "Pass manual verification", {}, "soft"],
+          ["VERIFY", "Record verification", {}, ""],
+          ["DESCRIBE_PR", "Describe PR", {}, ""],
+          ["RUN_REVIEW", "Run independent review", {}, "soft"],
+          ["SELECT_REVIEW_FINDING", "Select review finding", {}, "warm"],
+          ["RETURN_TO_IMPLEMENT", "Return selected finding", {}, "warm"]
+        ]
+      }
+    ];
+
+    const scenarios = {
+      small: {
+        title: "Small: bounded and greenfield",
+        description: "A low-risk change uses bounded reconnaissance and concise Product intent on the Effort root. It still passes through explicit concern boundaries, a self-contained Delivery Ticket, independent verification, and a separate review.",
+        steps: [
+          ["Choose Small", "SET_SCALE", { scale: "small" }, "Choose the lightest path without weakening authority boundaries."],
+          ["Start the Effort", "START_EFFORT", {}, "Create one continuous identity for the outcome."],
+          ["Capture bounded reconnaissance", "CAPTURE_RECON", {}, "Orient without turning facts into design decisions."],
+          ["Synthesize Product intent", "SYNTHESIZE_PRODUCT", {}, "Keep the small problem-and-behavior contract concise."],
+          ["Start Technical Design", "START_NEXT_STEP", {}, "Human action implicitly accepts Product intent."],
+          ["Draft Technical Design", "DESIGN_TECHNICAL", {}, "Use System and Program layers for the greenfield path."],
+          ["Start Delivery", "START_NEXT_STEP", {}, "Human action implicitly accepts Technical Design."],
+          ["Create one Delivery Ticket", "CREATE_DELIVERY_TICKETS", {}, "Condense the tracer bullet into a source-free snapshot."],
+          ["Start implementation", "START_NEXT_STEP", {}, "The Delivery Ticket becomes the execution contract."],
+          ["Claim the Delivery Ticket", "CLAIM_DELIVERY", {}, "One worker owns one code-changing run."],
+          ["Implement the tracer bullet", "IMPLEMENT", {}, "Implementation is test-first in the model, but not automated by the prototype."],
+          ["Record verification", "VERIFY", {}, "Independent verification is recorded once."],
+          ["Start PR preparation", "START_NEXT_STEP", {}, "A human starts the next workflow step."],
+          ["Describe the PR", "DESCRIBE_PR", {}, "Explanation is separate from code-changing implementation."],
+          ["Run independent review", "RUN_REVIEW", {}, "A clean fixed-point review closes the path."]
+        ]
+      },
+      medium: {
+        title: "Medium: existing behavior and a human gate",
+        description: "A material change starts with objective Research Questions and Research, then adds Transition Design because existing behavior must be preserved or replaced. A consequential mismatch pauses for a human instead of being decided by automation.",
+        steps: [
+          ["Choose Medium", "SET_SCALE", { scale: "medium" }, "Choose more ceremony because the uncertainty is material."],
+          ["Start the Effort", "START_EFFORT", {}, "Create one continuous identity for the outcome."],
+          ["Capture bounded reconnaissance", "CAPTURE_RECON", {}, "Bound the questions before researching them."],
+          ["Create Research Questions", "CREATE_RESEARCH_QUESTIONS", {}, "Describe objective queries without revealing a desired change."],
+          ["Run Research", "RUN_RESEARCH", {}, "Capture cited evidence once."],
+          ["Synthesize Product Design", "SYNTHESIZE_PRODUCT", {}, "Materialize a separate Product Design artifact."],
+          ["Start Technical Design", "START_NEXT_STEP", {}, "Human action implicitly accepts Product Design."],
+          ["Draft Technical Design", "DESIGN_TECHNICAL", {}, "Add Transition Design for behavior preservation."],
+          ["Start Delivery", "START_NEXT_STEP", {}, "Human action implicitly accepts Technical Design."],
+          ["Create Delivery Tickets", "CREATE_DELIVERY_TICKETS", {}, "Show two independently verifiable tracer bullets."],
+          ["Start implementation", "START_NEXT_STEP", {}, "Move only after the human starts the next step."],
+          ["Claim the first Delivery Ticket", "CLAIM_DELIVERY", {}, "The implementation worker receives a fresh snapshot."],
+          ["Implement the first tracer bullet", "IMPLEMENT", {}, "One implementation authority changes code."],
+          ["Require manual verification", "REQUEST_MANUAL_GATE", {}, "Surface a consequential mismatch to the human."],
+          ["Pass manual verification", "PASS_MANUAL_GATE", {}, "The human, not automation, clears the gate."],
+          ["Record verification", "VERIFY", {}, "Independent checks are recorded once."],
+          ["Start PR preparation", "START_NEXT_STEP", {}, "A human starts the reviewer-facing step."],
+          ["Describe the PR", "DESCRIBE_PR", {}, "Keep explanation separate from review."],
+          ["Run independent review", "RUN_REVIEW", {}, "Review is a separate read-only axis."]
+        ]
+      },
+      large: {
+        title: "Large: uncertain, decision-backed, and recoverable",
+        description: "Large work uses a Decision Map for consequential choices, then synthesizes Product and Technical Design without repeating the frontier. The scenario also shows blockers, a manual gate, and a human-selected review return.",
+        steps: [
+          ["Choose Large", "SET_SCALE", { scale: "large" }, "Choose the path where decision ownership must remain visible."],
+          ["Start the Effort", "START_EFFORT", {}, "Create one continuous identity for the outcome."],
+          ["Capture bounded reconnaissance", "CAPTURE_RECON", {}, "Orient before opening the larger decision surface."],
+          ["Open the Decision Map", "OPEN_DECISION_MAP", {}, "Create one durable frontier for consequential uncertainty."],
+          ["Create Research Questions", "CREATE_RESEARCH_QUESTIONS", {}, "Research the frontier objectively."],
+          ["Run Research", "RUN_RESEARCH", {}, "Evidence answers the questions once."],
+          ["Resolve the decision frontier", "RESOLVE_DECISIONS", {}, "One whole-frontier round owns the current choices."],
+          ["Synthesize Product Design", "SYNTHESIZE_PRODUCT", {}, "Product Design consumes resolved decisions; it does not re-interview."],
+          ["Start Technical Design", "START_NEXT_STEP", {}, "Human action implicitly accepts Product Design."],
+          ["Draft Technical Design", "DESIGN_TECHNICAL", {}, "Carry System, Program, Transition, and profile lenses."],
+          ["Start Delivery", "START_NEXT_STEP", {}, "Human action implicitly accepts Technical Design."],
+          ["Create blocked Delivery Tickets", "CREATE_DELIVERY_TICKETS", {}, "Make the dependency graph visible without losing architecture."],
+          ["Start implementation", "START_NEXT_STEP", {}, "The first unblocked tracer bullet is ready."],
+          ["Claim the first Delivery Ticket", "CLAIM_DELIVERY", {}, "One worker owns the first code-changing run."],
+          ["Implement the first tracer bullet", "IMPLEMENT", {}, "Implementation stays source-free and ticket-scoped."],
+          ["Require manual verification", "REQUEST_MANUAL_GATE", {}, "Consequential behavior needs human control."],
+          ["Pass manual verification", "PASS_MANUAL_GATE", {}, "Human judgment clears the gate."],
+          ["Record verification", "VERIFY", {}, "Verification is recorded once."],
+          ["Start PR preparation", "START_NEXT_STEP", {}, "A human begins the reviewer-facing step."],
+          ["Describe the PR", "DESCRIBE_PR", {}, "Explanation is not implementation and not review."],
+          ["Run independent review", "RUN_REVIEW", {}, "The independent reviewer reports a finding without changing code."],
+          ["Select the review finding", "SELECT_REVIEW_FINDING", {}, "Only a human can choose what returns to implementation."],
+          ["Return the selected finding", "RETURN_TO_IMPLEMENT", {}, "The selected finding returns to the same implementation authority."],
+          ["Apply the selected fix", "IMPLEMENT", {}, "No broad review-driven rewrite is automatic."],
+          ["Record verification again", "VERIFY", {}, "The changed implementation needs a fresh verification record."],
+          ["Start PR preparation again", "START_NEXT_STEP", {}, "The human explicitly resumes the PR path."],
+          ["Run the fixed-point review", "RUN_REVIEW", {}, "Review runs again only because the human selected a finding."]
+        ]
+      }
+    };
+
+    let state = Workflow.initialState();
+    let activeScenario = "small";
+    let scenarioIndex = 0;
+
+    function escapeHTML(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function statusClass(status) {
+      if (status === "not started" || status === "not run" || status === "not needed" || status === "not opened" || status === "not linked") return "pending";
+      if (status === "waiting for human" || status === "required" || status === "finding available" || status === "blocked") return "warn";
+      return "";
+    }
+
+    function statusLabel(status) {
+      return String(status).replaceAll(" ", " ");
+    }
+
+    function ticketSummary(ticket) {
+      if (!ticket) return "No Delivery Ticket selected.";
+      const blockers = ticket.blockedBy.length ? "blocked by " + ticket.blockedBy.join(", ") : "unblocked";
+      return ticket.id + " is " + ticket.status + "; " + blockers + "; " + ticket.snapshot + ".";
+    }
+
+    function artifact(title, status, detail) {
+      return '<div class="artifact"><span class="status ' + statusClass(status) + '">' + escapeHTML(statusLabel(status)) + '</span><h3>' + escapeHTML(title) + '</h3><p>' + escapeHTML(detail) + '</p></div>';
+    }
+
+    function renderState() {
+      const stateMarkup = `
+        <div class="current-moment">
+          <div class="moment-box accent"><div class="moment-label">Current moment</div><p class="moment-value">${escapeHTML(Workflow.derive(state).phase)}</p><p class="moment-detail">${escapeHTML(state.lastChange)}</p></div>
+          <div class="moment-box"><div class="moment-label">Effort</div><p class="moment-value">${escapeHTML(state.effort.name)}</p><p class="moment-detail">${escapeHTML(Workflow.derive(state).scale)} path / ${escapeHTML(state.effort.status)}</p></div>
+        </div>
+        <div class="artifact-grid">
+          ${artifact("Reconnaissance", state.reconnaissance.status, state.reconnaissance.facts.length ? state.reconnaissance.facts.join(", ") + ". Risk is " + state.reconnaissance.risk + "." : "Bounded facts and unknowns are not captured yet.")}
+          ${artifact("Research and evidence", state.research.status, state.research.questions + "; " + (state.research.evidence.length ? state.research.evidence.join(", ") : "no evidence yet") + ".")}
+          ${artifact("Decision Map", state.decisionMap.status, state.decisionMap.resolvedDecisions.length ? state.decisionMap.resolvedDecisions.join("; ") + "." : state.decisionMap.openTickets + " open decision ticket(s).")}
+          ${artifact("Product Design", state.design.product, state.design.productForm || "The problem-and-behavior contract is not drafted.")}
+          ${artifact("Technical Design", state.design.technical, state.design.layers.length ? state.design.layers.join(", ") + " layers; " + state.design.profiles.join(", ") + "." : "System, Program, and optional Transition intent is not drafted.")}
+          ${artifact("Delivery Tickets", state.delivery.status, state.delivery.tickets.length ? state.delivery.tickets.length + " snapshot(s); current: " + ticketSummary(Workflow.derive(state).ticket) : "No source-free tracer-bullet snapshot exists yet.")}
+          ${artifact("Implementation", state.implementation.status, state.implementation.worker ? state.implementation.worker + "; " + state.implementation.commits + " commit run(s)." : "No worker has claimed a Delivery Ticket.")}
+          ${artifact("Verification", state.implementation.verification, state.implementation.manualGate === "required" ? "Waiting for a human gate before automated verification." : "Independent verification is separate from implementation.")}
+          ${artifact("PR and review", state.pr.review, state.pr.status + "; " + (state.pr.findings.length ? state.pr.findings[0] : "no finding selected"))}
+          ${artifact("Domain context", state.design.context, state.design.context === "linked from Domain Documentation" ? "Vocabulary and durable architecture stay in Domain Documentation." : "No context pointer yet.")}
+        </div>`;
+      document.querySelector("#current-state").innerHTML = stateMarkup;
+    }
+
+    function renderFreePlay() {
+      document.querySelector("#free-play").innerHTML = actionGroups.map((group) => `
+        <div class="action-group">
+          <h3>${escapeHTML(group.title)}</h3>
+          <p>${escapeHTML(group.description)}</p>
+          <div class="action-buttons">${group.actions.map(([type, label, payload, tone]) => `<button class="button ${tone}" data-action="${type}" data-payload='${escapeHTML(JSON.stringify(payload))}' type="button">${escapeHTML(label)}</button>`).join("")}</div>
+        </div>`).join("");
+    }
+
+    function renderGuided() {
+      const scenario = scenarios[activeScenario];
+      const currentStep = scenario.steps[scenarioIndex];
+      const markup = `
+        <div class="scenario-copy"><h3>${escapeHTML(scenario.title)}</h3><p>${escapeHTML(scenario.description)}</p></div>
+        <div class="steps">${scenario.steps.map((step, index) => {
+          const complete = index < scenarioIndex;
+          const current = index === scenarioIndex;
+          const action = current ? `<button class="button small ${index === scenario.steps.length - 1 ? "primary" : "soft"}" data-guided="true" type="button">${complete ? "Done" : "Press this step"}</button>` : `<span class="step-check">${complete ? "Complete" : "Upcoming"}</span>`;
+          return `<div class="step ${complete ? "done" : ""} ${current ? "current" : ""}"><span class="step-number">${index + 1}</span><div><div class="step-label">${escapeHTML(step[0])}</div><div class="step-note">${escapeHTML(step[3])}</div></div>${action}</div>`;
+        }).join("")}</div>
+        <p class="footnote">${currentStep ? "Next: " + escapeHTML(currentStep[0]) : "Scenario complete. Try another tab or reset free play."}</p>`;
+      document.querySelector("#guided-content").innerHTML = markup;
+    }
+
+    function renderChecks() {
+      const derived = Workflow.derive(state);
+      const checks = derived.continuity.map((check) => `<li class="check-item"><span class="check-mark ${check.state ? "pass" : "watch"}">${check.state ? "OK" : "!"}</span><div><strong>${escapeHTML(check.label)}</strong><span>${escapeHTML(check.detail)}</span></div></li>`).join("");
+      const metrics = derived.metrics.map(([value, label]) => `<div class="metric"><span class="metric-value">${escapeHTML(value)}</span><span class="metric-label">${escapeHTML(label)}</span></div>`).join("");
+      document.querySelector("#checks").innerHTML = `<ul class="check-list">${checks}</ul><div class="metric-grid">${metrics}</div>`;
+    }
+
+    function renderAuthority() {
+      const items = [
+        ["Evidence", "Reconnaissance, Research, and prototypes establish facts; they do not own intent."],
+        ["Decision Map", state.decisionMap.resolvedDecisions.length ? "Owns the resolved frontier: " + state.decisionMap.resolvedDecisions.join(", ") + "." : "Owns consequential decisions on the Large path."],
+        ["Domain Documentation", "Owns durable vocabulary and architecture, not work-specific Product intent."],
+        ["Product Design", state.design.productForm || "Owns the approved problem-and-behavior contract."],
+        ["Technical Design", state.design.layers.length ? "Owns " + state.design.layers.join(", ") + " implementation layers." : "Owns approved implementation intent."],
+        ["Delivery Ticket", state.delivery.tickets.length ? "Owns a source-free snapshot for each tracer bullet." : "Will condense approved design into execution contracts."],
+        ["Implement / review", "Implement changes code; describe-pr explains; code-review reports. Only a human selects a return."]
+      ];
+      document.querySelector("#authority").innerHTML = `<ul class="authority-list">${items.map(([title, detail]) => `<li class="authority-item"><strong>${escapeHTML(title)}</strong><span>${escapeHTML(detail)}</span></li>`).join("")}</ul>`;
+    }
+
+    function renderLog() {
+      const events = state.history.slice().reverse();
+      document.querySelector("#event-log").innerHTML = events.length ? `<ol class="event-list">${events.map((entry, index) => `<li class="event ${entry.changed ? "changed" : ""}"><small>${events.length - index}. ${escapeHTML(entry.action)}</small><p>${escapeHTML(entry.message)}</p></li>`).join("")}</ol>` : '<p class="toolbar-note">No actions yet. Start with a scale.</p>';
+    }
+
+    function render() {
+      const derived = Workflow.derive(state);
+      const badge = document.querySelector("#scale-badge");
+      badge.textContent = derived.scale;
+      badge.classList.toggle("ready", state.scale !== "unclassified");
+      renderState();
+      renderFreePlay();
+      renderGuided();
+      renderChecks();
+      renderAuthority();
+      renderLog();
+    }
+
+    function applyAction(action) {
+      state = Workflow.reduce(state, action);
+      render();
+    }
+
+    document.addEventListener("click", (event) => {
+      const actionButton = event.target.closest("[data-action]");
+      if (actionButton) {
+        const payload = JSON.parse(actionButton.dataset.payload || "{}");
+        applyAction({ type: actionButton.dataset.action, ...payload });
+        return;
+      }
+
+      const tab = event.target.closest("[data-scenario]");
+      if (tab) {
+        activeScenario = tab.dataset.scenario;
+        scenarioIndex = 0;
+        state = Workflow.initialState();
+        document.querySelectorAll("[data-scenario]").forEach((button) => button.classList.toggle("active", button === tab));
+        render();
+        return;
+      }
+
+      const guidedButton = event.target.closest("[data-guided]");
+      if (guidedButton) {
+        const step = scenarios[activeScenario].steps[scenarioIndex];
+        if (!step) return;
+        applyAction({ type: step[1], ...step[2] });
+        if (state.history[state.history.length - 1].changed) scenarioIndex += 1;
+        render();
+      }
+    });
+
+    document.querySelector("#reset-button").addEventListener("click", () => {
+      state = Workflow.initialState();
+      scenarioIndex = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
