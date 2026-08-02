@@ -1,11 +1,12 @@
 ---
 name: research
-description: Use ONLY when the user explicitly invokes create-research by name.
+description: Use ONLY when the human explicitly invokes research by name with an open neutral Research record; investigates it and publishes canonical Evidence.
+disable-model-invocation: true
 ---
 
-# Research Codebase
+# Research
 
-You are tasked with conducting comprehensive research across the codebase to answer user questions by spawning parallel sub-agents and synthesizing their findings.
+You are tasked with conducting comprehensive research across the codebase to answer user questions by spawning parallel sub-agents and synthesizing one canonical Evidence resolution.
 
 ## CRITICAL: YOUR ONLY JOB IS TO DOCUMENT AND EXPLAIN THE CODEBASE AS IT EXISTS TODAY
 - DO NOT suggest improvements or changes unless the user explicitly asks for them
@@ -16,36 +17,26 @@ You are tasked with conducting comprehensive research across the codebase to ans
 - ONLY describe what exists, where it exists, how it works, and how components interact
 - You are creating a technical map/documentation of the existing system
 
-## Initial Setup:
+## Authorize The Record
 
-When this command is invoked, check the task artifact directory from your system prompt for documents like `*research-questions*.md` with `ls -La` (the directory may be a symlink - do NOT use regular `ls` or grep/glob tools). If you find one, read it and proceed with the contents as the research query.
+1. Require the human to name one open Research record. If none is named, ask for the record reference and stop.
+2. Read the configured Tracker Adapter, then fetch only that record's packet, state, assignees, blockers, and comments. Treat the packet as the complete research query; do not use its parent Effort, tickets, desired outcome, proposed design, or unrelated conversation context as evidence or scope.
+3. Claim the research record. A current-user claim authorizes resumption; a closed, blocked, or differently owned record does not authorize investigation.
 
-If you see several, ask the user which one to proceed with before reading any of them.
+The explicit invocation plus successful claim is the authorization boundary.
 
-If you do not know what the task artifact directory is from your system prompt, respond with:
-```
-I'm ready to research the codebase. Please provide your research question or area of interest, and I'll analyze it thoroughly by exploring relevant components and connections.
-```
+## Investigate The Packet
 
-**IMPORTANT**: You may NEVER read `ticket.md` files or other files from the artifact directory which do not match the `research-questions` pattern above unless such a file is explicitly asked for by the user.
+1. **Read the packet and Evidence shape first:**
+   - Read [references/evidence.md](references/evidence.md) fully before decomposing the work.
+   - Account for every question and exact Named Source boundary.
+   - Read directly named files fully before delegating related analysis.
+   - Inspect only Named Sources and their stated descendant scope. Preserve insufficient answers as unanswered rather than expanding the scope.
 
-Then wait for the user's research query.
-
-## Steps to follow after receiving the research query:
-
-1. **Read any directly mentioned files first:**
-   - If the user mentions specific files (docs, JSON, research questions), read them FULLY first
-   - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
-   - **CRITICAL**: Read these files yourself in the main context before spawning any sub-tasks
-   - **DO NOT read ticket files** - research must stay objective about the current codebase, not be influenced by what a ticket wants to build. The research questions already capture what needs to be investigated.
-   - This ensures you have full context before decomposing the research
-
-2. **Analyze and decompose the research question:**
-   - Break down the user's query into composable research areas
-   - Take time to ultrathink about the underlying patterns, connections, and architectural implications the user might be seeking
-   - Identify specific components, patterns, or concepts to investigate
-   - Create a research plan that tracks all subtasks
-   - Consider which directories, files, or architectural patterns are relevant
+2. **Analyze and decompose the research questions:**
+   - Break the packet into composable areas while preserving question coverage.
+   - Identify the components, patterns, dependencies, and current-state connections each area must establish.
+   - Track every area and its supporting source boundary in a research plan.
 
 3. **Spawn parallel sub-agent tasks for comprehensive research:**
    - Create multiple `task` subagents to research different aspects concurrently
@@ -58,8 +49,7 @@ Then wait for the user's research query.
 
    **For web research and researching libraries & dependencies (if applicable):**
    - Use the **web-search-researcher** agent for external documentation and resources
-   - You _may_ see a humanlayer library researcher tool. If you do, you should use this to answer any research questions about dependencies and libraries that are in scope for the research. If the tool is not present, do not mention it.
-   - IF you use web-research agents, instruct them to return LINKS with their findings, and please INCLUDE those links in your final report
+    - IF you use web-research agents, instruct them to return LINKS with their findings, and please INCLUDE those links in your final report
 
    The key is to use these agents intelligently:
    - **Combine related questions**: Don't necessarily launch one subagent per research question. Group related questions that touch the same area of the codebase into a single subagent prompt. For example, if 3 questions are about how the daemon handles sessions, combine them into one codebase-analyzer call.
@@ -80,52 +70,28 @@ Then wait for the user's research query.
    - Highlight patterns, connections, and architectural decisions
    - Answer the user's specific questions with concrete evidence
 
-5. **Gather metadata for the research document:**
-   - Filename: `.humanlayer/tasks/TASKNAME/NN-research-DESCRIPTION.md`
-     - First, check the task directory in your system prompt. If you do not see it, find the task directory: `ls -La .humanlayer/tasks | grep -i "eng-XXXX"`
-     - If the directory doesn't exist, create: `.humanlayer/tasks/ENG-XXXX-description/`
-     - Format: `NN-research-DESCRIPTION.md` where NN is a zero-padded chronological index and DESCRIPTION is a 2-4 word kebab-case slug
-     - **Chronological indexing**: `ls -La` the task directory, find the highest existing NN- prefix, and use the next number. First document = `01-`, second = `02-`, etc.
-     - Directory naming:
-       - With ticket: `.humanlayer/tasks/ENG-1478-parent-child-tracking/02-research-parent-child-tracking.md`
-       - Without ticket: `.humanlayer/tasks/authentication-flow/02-research-auth-flow.md`
+5. **Draft canonical Evidence:**
+   - Follow [references/evidence.md](references/evidence.md).
+   - Produce one cohesive Evidence resolution rather than a list of subagent reports or a separate Research document.
+   - Include the current date, repository, revision, and branch where available so code citations retain their investigated context.
 
-6. **Generate research document:**
-   - Use the metadata gathered in step 4
-   - Read the research template:
-
-   `Read(.opencode/skills/create-research/references/research_template.md)`
-
-   - Write the document to `.humanlayer/tasks/TASKNAME/NN-research-DESCRIPTION.md`
-
-7. **Attempt to answer open questions**
+6. **Attempt to answer open questions**
    - if there are open questions in the doc you write, dispatch subagents to additional targeted research AFTER you write the doc
    - update the doc with your findings, removing and open questions that now have answers - don't append to the end,
    - do at most one additional pass to find more information, if your second group of subagents can't find all the answers, leave the remaining questions as open and proceed to the final answer
 
-8. **Note cloud permalinks:**
-   Cloud permalinks are automatically provided when you write artifacts. Include them in your final output.
+## Publish Evidence
 
-   For code references in the synclayer repo (if on main or pushed):
-   - Get repo info: `gh repo view --json owner,name`
-   - Create permalinks: `https://github.com/{owner}/{repo}/blob/{commit}/{file}#L{line}`
+Verify before publication that every question is accounted for, established claims have direct citations, primary sources are preferred, inference is labeled, and the text remains factual and non-normative. If the draft fails a check, leave the record open and claimed, report the failure, and stop.
 
-9. **Respond to the user according to the template**
-   - Read the final output template:
-   `Read(.opencode/skills/create-research/references/research_final_answer.md)`
-   - Respond following the template exactly, include cloud permalinks if you have them.
-
-10. **Handle follow-up questions:**
-   - If the user has follow-up questions for you to investigate
-   - Spawn new sub-agents as needed for additional investigation
-   - Update the existing document in place with your new findings, likely you will update existing sections rather than adding net-new ones to the end
+Add your Evidence as a comment to the Tracker and close it. Closed Research records are Historical Tracker Records.
 
 ## Document Style and Format
 
-The research document should read as a **story about the codebase** — a technical explainer someone
+The Evidence resolution should read as a **story about the codebase** — a technical explainer someone
 wrote on purpose, told with diagrams, tables, code blocks, pseudocode, and takeaway headers in
 between. It is **not a list of answers to the research questions**, and not a file index. A reader
-should be able to understand how the system works from the document alone — file citations support
+should be able to understand how the system works from the Evidence alone — file citations support
 the narrative, they don't replace it. Human readability is critical, but never at the expense of
 technical depth and thoroughness.
 
@@ -239,54 +205,16 @@ Pick the views that make each part of the story clearest:
 
 <guidance>
 ## Important notes:
-- Use parallel `task` subagents to maximize efficiency and minimize context usage
-- Focus on finding concrete file paths and line numbers for developer reference
-- Research documents should be self-contained with all necessary context
-- Each sub-agent prompt should be specific and focused on read-only documentation operations
-- Document cross-component connections and how systems interact
-- Link to GitHub when possible for permanent references
-- Stay focused on synthesis, not deep file reading
-- Have sub-agents document examples and usage patterns as they exist
-- **REMEMBER**: Document and Ask about what IS and WHY, not what SHOULD BE
-- **NO RECOMMENDATIONS OR IMPLEMENTATION SUGGESTIONS**: Only describe the current state of the codebase
-- **Testing patterns**: For each component area you research, document how it's currently tested (unit, integration, e2e). Include test file locations and patterns. The research template has a "Testing patterns" section under each component - always fill it in.
-- **File reading**: Always read mentioned files FULLY (no limit/offset) before spawning sub-tasks
-- **Critical ordering**: Follow the numbered steps exactly
-  - ALWAYS read mentioned files first before spawning sub-tasks (step 1)
-  - ALWAYS wait for all sub-agents to complete before synthesizing (step 4)
-  - ALWAYS gather metadata before writing the document (step 5 before step 6)
-  - NEVER write the research document with placeholder values
-- **Path handling**: Task-specific research goes in .humanlayer/tasks/
-  - Use `.humanlayer/tasks/ENG-XXXX-description/NN-research-DESCRIPTION.md` for task research
-
-## Response
-
-Remember, you must respond to the user according to the output template at `.opencode/skills/create-research/references/research_final_answer.md`
-
-<important if="there are open questions in the research document">
-
-If there are open questions after writing the document (and optionally, after your second pass to find answers):
-
-You should include the following text after the section in the final answer template that says 'If you'd like, you can review the research document for completeness.':
-
-```
-There are N open questions that you should review, you can
-- ask me to go find the answers for them
-- provide the answers yourself
-- tell me they are irrelevant and I'll remove them
-```
-</important>
-
-## Cloud Permalinks
-
-When you write or edit documents in .humanlayer/tasks/, a cloud permalink is automatically provided in the hook response.
-- The permalink appears as `additionalContext` after write, edit, or read operations
-- Use this permalink in your final output for easy navigation
-- Example format: `http(s)://{DOMAIN}/artifacts/{artifactId}`
+- Focus on concrete source paths, line ranges, stable links, and current behavior.
+- Make the canonical Evidence self-contained; helper task reports are inputs, not additional artifacts.
+- Document cross-component connections, examples, usage patterns, and testing patterns as they exist.
+- Read directly named files fully before delegating related analysis, and wait for all helper tasks before synthesis.
+- Follow the authorization, investigation, follow-up, and publication order exactly.
+- Preserve unresolved questions in Evidence after the one permitted targeted follow-up pass.
 
 ## Markdown Formatting
 
-When writing markdown files that contain code blocks showing other markdown (like README examples or SKILL.md templates), use 4 backticks (````) for the outer fence so inner 3-backtick code blocks don't prematurely close it:
+When Evidence contains code blocks showing other Markdown, use four backticks for the outer fence so inner three-backtick blocks remain intact:
 
 ````markdown
 # Example README
