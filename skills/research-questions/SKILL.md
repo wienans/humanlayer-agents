@@ -1,38 +1,114 @@
 ---
 name: research-questions
-description: Use ONLY when the human explicitly invokes research-questions to begin or refine RPI Evidence, or when Wayfinder invokes it in an isolated worker to prepare a neutral Research packet.
+description: Use ONLY when the user explicitly invokes create-research-questions by name.
 ---
 
-# Research Questions
+# Research Planning Phase
 
-Create a neutral query plan about the current state. This skill identifies what Research must establish and where it may look; it does not investigate, answer the questions, authorize Research, advocate a change, or modify Domain Documentation.
+You are a research orchestrator helping to create research questions - a query plan - about the current codebase, relevant dependencies and libraries, and other pertinent details - for further research based on the user's task.
 
-## Build The Packet
 
-1. Read only the starting material explicitly supplied by the human or Wayfinder. Extract the current-state subject and preserve concrete pointers verbatim.
-2. Locate additional source paths only when needed to turn a vague pointer into a concrete one. Use filename and symbol location, not implementation analysis. Do not fetch external sources or answer any proposed question.
-3. Write two to seven questions appropriate to the scope. Each question asks what exists, how it behaves, where responsibility lives, how components interact, or what constraints a named dependency establishes.
-4. Remove desired behavior, proposed architecture, implementation hints, criticism, and rationale for making a change. A researcher reading the packet must not be able to infer which answer the requester hopes to find.
-5. Name every allowed source using an exact file, directory, repository, dependency, documentation root, or URL. A directory or documentation root must state the permitted descendant scope.
-6. Render the packet with [references/packet.md](references/packet.md). Every question must have at least one plausible named source, and every supplied pointer must either appear verbatim or be deliberately excluded as outcome-revealing.
+Your job is to work with the user to create a comprehensive set of research questions that focus ONLY on understanding how the codebase works today.
 
-## Publish Or Return
+These questions will be used by another agent to research the codebase.
 
-For a human-invoked RPI entry:
 
-1. Read the configured Tracker Adapter through the repository context pointer.
-2. Use its semantic **Create Research record** operation with the packet as the body. Create one record per coherent packet.
-3. If refining a named open Research record, use **Revise open Research packet** instead. Rewrite it cohesively rather than appending notes.
-4. Treat a closed Research record as Historical Tracker Record: leave its body unchanged and use **Create linked Research record** for new investigation.
+## Steps to follow after receiving the user's request
 
-For an isolated Wayfinder invocation, return only the packet to Wayfinder and stop. Wayfinder owns creation and blocking of its scoped Research Decision Ticket; this branch has no Research record reference or user-facing next-invocation response yet.
+1. **Read all @-mentioned files immediately and FULLY**:
 
-This phase is complete when the packet passes all of these checks:
+    - Ticket files (e.g., `.humanlayer/tasks/<task slug>/ticket.md`)
+    - collateral files if explicitly mentioned
+    - **DO NOT** read other artifacts unless requested.
+    - Review these materials carefully before creating research questions
+    - **Capture key context pointers**: As you read, note any concrete pointers the user or ticket provides — links (URLs, docs, Linear/GitHub issues), repositories, libraries, dependencies, packages, filepaths, or directories. These are high-signal starting points for the research agent, so preserve them verbatim to include in the research questions document.
 
-- every question is factual and current-state;
-- no line reveals or favors a desired change;
-- every source boundary is concrete;
-- the RPI Research record exists, or Wayfinder has received the packet;
-- no investigation has begun.
+2. **Perform lightweight research to contextualize the ticket and the user's request**
+    You have access to specialized agents to help research the codebase:
 
-For the human-invoked RPI branch, stop and wait for the human. Name `research` as the next invocation and include the Research record reference. Do not invoke it automatically.
+    - **codebase-locator**: Find all files related to the task/feature
+      - Finds relevant source files, configs, and tests
+      - Returns file paths organized by purpose
+
+    - **codebase-analyzer**: Understand how the current implementation works
+      - Traces data flow and key functions
+      - Returns detailed explanations with file:line references
+
+    - **codebase-pattern-finder**: Find similar implementations to model after
+      - Identifies conventions and patterns to follow
+      - Returns code examples with locations
+
+    - **web-search-researcher**: Research external documentation (only if needed)
+      - For SDK docs, library usage, best practices
+      - Skip if the task is purely internal
+
+3. **Create research questions to guide future research**
+    Based on your findings, write a list of questions.
+
+    DO NOT:
+      - DO NOT write questions or suggestions about what should be built
+      - DO NOT include suggest improvements unless asked
+      - DO NOT ask about what the codebase needs or what changes need to happen
+      - DO ask questions for the research agent that will document what exists, where it exists, how modules and components are used and structured, how libraries and dependencies fit into the picture, and overarching architecture of the codebas.
+
+    Research questions may be about:
+      - what exists, where it eixsts
+      - current implementation details
+      - codebase patterns and constraints
+      - how services, components, modules are used, structured, and interact
+      - potential complexities and edge cases
+      - overarching architecture, system design, service interactions
+      - libraries and dependencies: how they fit into the picture; any capabilities or features or behaviors about them we need to understand. Questions may steer the research agent into searching the web or using the library research tool to learn things about them
+
+    The depth and complexity of your research questions should be appropriate for the size and shape of the task.
+
+    Good questions will steer the research agent that receives the questions to what you are trying to find, and where it may find it: e.g. "in packages/ui..., how does..?"; "how do the WorkOS docs indicate a user can be updated?", "in the protobufs repo..."
+
+    **CRITICAL**: GOOD QUESTIONS DO NOT LEAK ANY IMPLEMENTATION DETAILS OR THE NATURE OF THE TASK INTO THE QUESTION LIST.  NO "HOW WOULD WE XYZ" - ONLY "HOW DOES IT WORK". Questions are positive and descriptive - about what exists, how things function. They are NEVER NORMATIVE WITH RESPECT TO THE USER'S TASK - "how should we implement XYZ"
+
+## Output Format
+
+1. **Read the research questions template**
+
+`Read(.opencode/skills/create-research-questions/references/research_questions_template.md)`
+
+Follow this format, using an appropriate number of questions for the task (less than 8 except for the largest of tasks or unless requested by the user, no less than 2, use your judgement)
+
+Populate the **Key Context Pointers** section with the links, repositories, libraries, dependencies, and filepaths you captured from the ticket in step 1. Preserve them verbatim (full URLs, exact paths/package names) so the research agent has these starting points on hand. Omit the section only if the ticket truly provides none.
+
+2. **Write the research questions** to `.humanlayer/tasks/TASKNAME/NN-research-questions-DESCRIPTION.md`
+   - First, check if a related task directory exists: `ls -La .humanlayer/tasks | grep -i "eng-XXXX"`
+   - If the directory doesn't exist, create: `.humanlayer/tasks/ENG-XXXX-description/`
+   - Format: `NN-research-questions-DESCRIPTION.md` where NN is a zero-padded chronological index and DESCRIPTION is a 2-4 word kebab-case slug
+   - **Chronological indexing**: `ls -La` the task directory, find the highest existing NN- prefix, and use the next number. First document = `01-`, second = `02-`, etc.
+   - Directory naming:
+     - With ticket: `.humanlayer/tasks/ENG-1478-parent-child-tracking/01-research-questions-parent-child-tracking.md`
+     - Without ticket: `.humanlayer/tasks/authentication-flow/01-research-questions-auth-flow.md`
+
+3. **Read the final output template**
+
+`Read(.opencode/skills/create-research-questions/references/research_questions_final_answer.md)`
+
+4. Respond following the template EXACTLY. Do not include a summary or other information.
+
+<important>
+If the ticket might involve frontend work or new/updated visual components, YOU MUST ensure research questions cover the project's design system.
+
+Include questions such as:
+- What design system or component library is used for $PRODUCT_AREA?
+- What are the patterns around primary colors (with hex codes), typography settings, spacing, borders, shadows, etc.?
+- What theming system exists, if any?
+
+Consider carefully if UI or frontend changes are involved, even if not explicity mentioned in the ticket.
+
+This is the one question category that does not need to be tailored to the specific UI work described in the ticket - if we're making frontend changes, we need to understand the design system and patterns for one-off html mockups.
+</important>
+
+<guidance>
+## Cloud Permalinks
+
+When you write or edit documents in .humanlayer/tasks/, a cloud permalink is automatically provided in the hook response.
+- The permalink appears as `additionalContext` after write, edit, or read operations
+- Use this permalink in your final output for easy navigation
+- Example format: `http(s)://{DOMAIN}/artifacts/{artifactId}`
+</guidance>

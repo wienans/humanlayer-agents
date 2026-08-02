@@ -5,26 +5,23 @@ description: Build throwaway Evidence for one design question. Use when a workfl
 
 # Prototype
 
-A prototype is throwaway code that answers one named design question. It produces Evidence; it does not approve intent, mutate Domain Documentation, or become an implementation workflow.
+A prototype is **throwaway code that answers a question**. It produces Evidence.
 
 ## Choose The Shape
 
-- A business-logic, state-transition, or data-shape question uses [references/logic.md](references/logic.md).
-- A visual or interaction question uses [references/ui.md](references/ui.md).
+Identify which question is being answered — from the user's prompt, the surrounding code, or by asking if the user is around:
 
-If the question is ambiguous, ask. When the human is unavailable, infer from the surrounding code and state the assumption visibly in the prototype.
+- **"Does this logic / state model feel right?"** → [LOGIC.md](references/LOGIC.md). Build a single shareable HTML file — free-play buttons plus tabbed guided walkthroughs — that pushes the state machine through cases that are hard to reason about on paper, and that a non-developer can drive.
+- **"What should this look like?"** → [UI.md](references/UI.md). Generate several radically different UI variations on a single route, switchable via a URL search param and a floating bottom bar.
 
-## Shared Rules
+The two shapes produce very different artifacts — getting this wrong wastes the whole prototype. If the question is genuinely ambiguous and the user isn't reachable, default to whichever shape better matches the surrounding code (a backend module → logic; a page or component → UI) and state the assumption at the top of the prototype.
 
-1. Obtain the human's choice of a dedicated throwaway branch or worktree before editing. Stop if the active workspace could put prototype code on the production branch.
-2. Mark the artifact as a prototype and place it near the relevant module or page.
-3. Make it trivial to run using the project's existing conventions.
-4. Keep state in memory unless persistence itself is the question.
-5. Show the relevant state after every action or variant switch.
-6. Spend no effort on production abstractions, exhaustive error handling, or automated tests.
-7. Present the prototype and wait for the human's verdict.
-8. Commit the complete artifact only to the approved throwaway branch. Publish that branch to the configured remote when one exists; otherwise retain the local branch and record the repository path, branch name, and full commit SHA as the durable pointer.
-9. Use the Tracker Adapter's semantic **Record Prototype Evidence** operation on the invoking decision record with the question, verdict, and pointer.
-10. Leave the production branch free of prototype artifacts. Production receives a separately implemented and tested version of the accepted decision.
 
-Completion requires the human's verdict and a durable Evidence pointer. Return the answer to the invoking decision-producing workflow, which may invoke `domain-modeling` if the accepted decision has durable Domain Impact. Do not advance the workflow or implement production code.
+## Rules that apply to both
+
+1. **Throwaway from day one, and clearly marked as such.** Locate the prototype code close to where it will actually be used (next to the module or page it's prototyping for) so context is obvious — but name it so a casual reader can see it's a prototype, not production. For throwaway UI routes, obey whatever routing convention the project already uses; don't invent a new top-level structure.
+2. **Trivial to run.** A UI prototype starts from one command in the project's task runner — `pnpm <name>`, `python <path>`, `bun <path>`, etc. A logic demo is a single HTML file the user double-clicks. Either way, no thinking required to start it.
+3. **No persistence by default.** State lives in memory. Persistence is the thing the prototype is _checking_, not something it should depend on. If the question explicitly involves a database, hit a scratch DB or a local file with a clear "PROTOTYPE — wipe me" name.
+4. **Skip the polish.** No tests, no error handling beyond what makes the prototype _runnable_, no abstractions. The point is to learn something fast.
+5. **Surface the state.** After every action (logic) or on every variant switch (UI), print or render the full relevant state so the user can see what changed.
+6. **Record Prototype Evidence.** Fold any validated decision into the real code, then capture the prototype itself as a **primary source**: commit it to a throwaway branch, out of main, and leave a context pointer to that branch on the Tracker Adapter. Capture the answer too — the verdict and the question it settled — in the issue or a commit. The main branch keeps only the validated decision.

@@ -1,31 +1,36 @@
 ---
 name: tdd
-description: Drive implementation through vertical red-green slices at an approved testing seam. Use when a workflow or user requests test-first work, red-green-refactor, behavioral tests, or integration tests.
+description: Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions "red-green-refactor", or wants integration tests.
 ---
 
 # Test-Driven Development
 
-TDD is a tight red-green loop through a public testing seam. It is execution guidance, not a workflow owner: consume approved intent and Domain Documentation, change neither, and return verification to the invoking implementation workflow.
+TDD is the red → green loop. This skill is the reference that makes that loop produce tests worth keeping: what a good test is, where tests go, the anti-patterns, and the rules of the loop. Every section applies on every cycle — consult them before and during the loop, not after.
 
-Run code-changing cycles only when the owning implementation workflow has invoked this primitive. Otherwise return seam and test-strategy guidance without editing code.
+When exploring the codebase, read `CONTEXT.md` (if it exists) so test names and interface vocabulary match the project's domain language, and respect ADRs in the area you're touching.
 
-## Establish The Seam
+## What a good test is
 
-Use the Testing Seam already approved by the Delivery Ticket or design. When it is absent or cannot exercise the Desired End State, stop and report the missing obligation to the owning implementation workflow; TDD does not choose or approve a seam during execution. Tests and callers should cross the same seam.
+Tests verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't. A good test reads like a specification — "user can checkout with valid cart" tells you exactly what capability exists — and survives refactors because it doesn't care about internal structure.
 
-Read [references/tests.md](references/tests.md) for test quality and [references/mocking.md](references/mocking.md) before introducing a test double.
+See [tests.md](references/tests.md) for examples and [mocking.md](references/mocking.md) for mocking guidelines.
 
-## Red-Green Slices
+## Seams — where tests go
 
-For each observable behavior:
+A **seam** is the public boundary you test at: the interface where you observe behavior without reaching inside. Tests live at seams, never against internals.
 
-1. **Red**: write one behavioral test with expected values from an independent source, run it, and confirm it fails for the intended reason.
-2. **Green**: add only enough production behavior to pass that test, then rerun it.
-3. **Check**: run the focused surrounding tests before starting the next slice.
-4. **Repeat**: let the completed slice inform the next test rather than writing a horizontal batch in advance.
+**Test only at pre-agreed seams.** Before writing any test, write down the seams under test and confirm them with the user. No test is written at an unconfirmed seam. You can't test everything — agreeing the seams up front is how testing effort lands on the critical paths and complex logic instead of every edge case.
 
-Keep refactoring separate from proving new behavior. Refactor only while green and without changing the approved interface or Desired End State.
+Ask: "What's the public interface, and which seams should we test?"
 
-If a change cannot produce a meaningful behavioral test, record the concrete reason and the alternative runnable verification instead of adding a ceremonial test. The invoking implementation workflow decides whether that exception satisfies the Delivery Ticket.
+## Anti-patterns
 
-Completion requires every implemented behavior to have a witnessed red state and green state, or one documented exception with runnable verification. Return focused command results and changed behavior to the caller; do not commit, change tracker state, invoke review, or advance the workflow.
+- **Implementation-coupled** — mocks internal collaborators, tests private methods, or verifies through a side channel (querying the database instead of using the interface). The tell: the test breaks when you refactor but behavior hasn't changed.
+- **Tautological** — the assertion recomputes the expected value the way the code does (`expect(add(a, b)).toBe(a + b)`, a snapshot derived by hand the same way, a constant asserted equal to itself), so it passes by construction and can never disagree with the code. Expected values must come from an independent source of truth — a known-good literal, a worked example, the spec.
+- **Horizontal slicing** — writing all tests first, then all implementation. Bulk tests verify _imagined_ behavior: you test the _shape_ of things rather than user-facing behavior, the tests go insensitive to real changes, and you commit to test structure before understanding the implementation. Work in **vertical slices** instead — one test → one implementation → repeat, each test a **tracer bullet** that responds to what the last cycle taught you.
+
+## Rules of the loop
+
+- **Red before green.** Write the failing test first, then only enough code to pass it. Don't anticipate future tests or add speculative features.
+- **One slice at a time.** One seam, one test, one minimal implementation per cycle.
+- **Refactoring is not part of the loop.** It belongs to the review stage (see the `code-review` skill), not the red → green implementation cycle.

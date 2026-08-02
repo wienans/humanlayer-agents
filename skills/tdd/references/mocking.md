@@ -1,13 +1,59 @@
-# Test Doubles
+# When to Mock
 
-Prefer real in-process collaborators and faithful local stand-ins. Use test doubles only at system seams:
+Mock at **system boundaries** only:
 
-- external APIs;
-- remote services;
-- time and randomness;
-- hardware or operating-system interfaces;
-- databases or filesystems when no practical local stand-in exists.
+- External APIs (payment, email, etc.)
+- Databases (sometimes - prefer test DB)
+- Time/randomness
+- File system (sometimes)
 
-Inject an operation-specific interface rather than a generic transport. A payment dependency should expose `charge`, not arbitrary `fetch`; a clock should expose `now`, not an entire runtime. This keeps fixtures declarative and failures tied to behavior.
+Don't mock:
 
-Do not mock owned classes or internal modules merely to isolate a function. If a test must script internal call order, move the test to the module's public interface or reconsider the seam.
+- Your own classes/modules
+- Internal collaborators
+- Anything you control
+
+## Designing for Mockability
+
+At system boundaries, design interfaces that are easy to mock:
+
+**1. Use dependency injection**
+
+Pass external dependencies in rather than creating them internally:
+
+```typescript
+// Easy to mock
+function processPayment(order, paymentClient) {
+  return paymentClient.charge(order.total);
+}
+
+// Hard to mock
+function processPayment(order) {
+  const client = new StripeClient(process.env.STRIPE_KEY);
+  return client.charge(order.total);
+}
+```
+
+**2. Prefer SDK-style interfaces over generic fetchers**
+
+Create specific functions for each external operation instead of one generic function with conditional logic:
+
+```typescript
+// GOOD: Each function is independently mockable
+const api = {
+  getUser: (id) => fetch(`/users/${id}`),
+  getOrders: (userId) => fetch(`/users/${userId}/orders`),
+  createOrder: (data) => fetch('/orders', { method: 'POST', body: data }),
+};
+
+// BAD: Mocking requires conditional logic inside the mock
+const api = {
+  fetch: (endpoint, options) => fetch(endpoint, options),
+};
+```
+
+The SDK approach means:
+- Each mock returns one specific shape
+- No conditional logic in test setup
+- Easier to see which endpoints a test exercises
+- Type safety per endpoint

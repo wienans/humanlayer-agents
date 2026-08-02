@@ -1,22 +1,22 @@
 ---
 name: grilling
-description: Grill decisions as a whole frontier. Use when a workflow or user needs to expose and resolve every branch of a plan, design, or idea without asking the user for discoverable facts.
+description: Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.
 ---
 
-# Grilling
+Interview the user relentlessly until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
 
-Map the subject as a **design tree**: each decision branches into the decisions that depend on it. The **frontier** is every unresolved decision whose prerequisites are settled.
+Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask _now_ without guessing at answers you haven't heard yet. Ask the whole frontier in one round: number each question and give your recommended answer. Then wait for the user's answers before the next round.
 
-Ask the whole frontier in one numbered round. Give a recommendation for every question, then wait for the human's answers before recomputing the frontier.
+Each question should be formatted like so:
 
-```text
-Q1 - <question title>: <question, context, and choices>
+```
+❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
 
-Recommended: <answer and concise rationale>
+➡️ <your recommended answer>
 ```
 
-Facts are agent work. Look up immediately discoverable environmental facts with read-only tools instead of asking the human. When a question requires scoped investigation or durable Evidence, return that factual need to the owning workflow as a neutral Research need; only explicit `research` authorizes that investigation. A pending fact blocks only the decisions that depend on it, so continue with the rest of the frontier. Decisions remain human work.
+Each round the user answers reshapes the tree — settled decisions push the frontier outward and unblock questions that depended on them. Recompute the frontier and ask the next round. A question whose answer depends on another question still open in this round belongs to a _later_ round, not this one.
 
-This is a primitive, not a workflow owner. Return resolved choices to the invoking concern. When a resolved choice introduces durable domain language or qualifies as an architectural decision, invoke `domain-modeling`; otherwise leave Domain Documentation unchanged.
+Finding _facts_ is your job, never the user's. When a frontier question needs a fact from the environment (filesystem, tools, etc.), dispatch a sub-agent to find it — don't ask the user for anything you could look up yourself. Don't block on it: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait for the sub-agent to report — ask the rest of the frontier now. The _decisions_ are the user's — put each to them and wait.
 
-Completion requires an empty frontier and human confirmation that the shared understanding is accurate. Stop after returning the resolved design tree to the caller; do not advance the workflow.
+The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms you have reached a shared understanding.
