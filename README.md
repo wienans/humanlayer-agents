@@ -2,14 +2,16 @@
 
 The independent OpenCode distribution lives directly under [`skills/`](skills/). Existing skills under `.opencode/`, `.agents/`, and `matt-skills/` are unchanged source material, not runtime dependencies of the independent suite.
 
-The delivered RPI Evidence entry path is:
+The delivered RPI path through Product Design is:
 
 ```mermaid
 flowchart TD
     A[research-questions] -->|explicit human invocation| B[research]
+    B -->|explicit human invocation| C[product-design]
+    D[wayfinder] -->|sufficiently resolved; explicit human invocation| C
 ```
 
-`research-questions` creates a neutral Research packet and stops. Only `research` authorizes investigation; the skill drives bounded generic research tasks, publishes canonical Evidence, names `product-design` as the downstream suite phase, and stops. The downstream skill is delivered by a separate slice.
+`research-questions` creates a neutral Research packet and stops. Only `research` authorizes investigation; it publishes canonical Evidence and stops. `product-design` then converges that Evidence or a sufficiently resolved Wayfinder Decision Map into the approved problem-and-behavior contract and stops before `technical-design`.
 
 Shared model-invoked primitives are `grilling`, `domain-modeling`, `prototype`, `codebase-design`, and `tdd`.
 
