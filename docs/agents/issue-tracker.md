@@ -25,6 +25,25 @@ When set to `yes`, PRs run through the same labels and states as issues, using t
 
 GitHub shares one number space across issues and PRs, so a bare `#42` may be either - resolve with `gh pr view 42` and fall back to `gh issue view 42`.
 
+## Research record operations
+
+Research workflows use these semantic operations. `Role: Research` in the body is the classification; do not add a triage-state label merely to represent that role.
+
+- **Create Research record**: create an open issue titled `Research: <neutral current-state subject>` with the complete neutral Research packet as its body: `gh issue create --title "Research: ..." --body-file <packet-file>`.
+- **Fetch Research record**: `gh issue view <number> --json number,title,body,state,assignees,comments,url`, plus `gh api repos/<owner>/<repo>/issues/<number> --jq .issue_dependencies_summary.blocked_by` for open native blockers. For fallback dependencies, inspect the body `Blocked by:` line and check each referenced issue. The body is the Research packet. A closed record is historical.
+- **Revise open Research packet**: first fetch and verify that the record is open and has no Evidence resolution, then replace the body cohesively with `gh issue edit <number> --body-file <packet-file>`.
+- **Claim Research record**: first verify that the record is open and has no open blocker. If unassigned, run `gh issue edit <number> --add-assignee @me`; if assigned to the current user, preserve that claim for resumption; if assigned to anyone else, stop. Re-fetch it and begin Research only when the current user is the assignee and its open blocker count remains zero.
+- **Resolve Research record**: fetch comments and count top-level `## Evidence` resolution comments. If none exists, add the completed canonical Evidence as one comment with `gh issue comment <number> --body-file <evidence-file>` and re-fetch to verify exactly one exists. If exactly one already exists after a prior close failure, preserve it and do not comment again. Stop on multiple Evidence comments. Close without another comment using `gh issue close <number> --reason completed`. The packet body and this one resolution comment together are the canonical Research record.
+- **Create linked Research record**: create the new neutral packet with **Create Research record**, adding `Related Research: #<closed-number>` below `Role: Research`. Then annotate the closed record with a `Follow-up: #<new-number>` comment. Neither operation changes the closed body or its Evidence.
+- **Annotate correction**: leave a closed body and its Evidence comment unchanged. Add a comment beginning `Correction:` that states the corrected fact, cites its evidence, and links any replacement Research record.
+- **Annotate supersession**: leave the closed record unchanged. Add a comment beginning `Superseded:` that links the newer Research record and explains which still-valid facts it replaces.
+
+New investigation always gets a new open Research record. Never reopen or rewrite a closed Research record.
+
+## Prototype Evidence operation
+
+- **Record Prototype Evidence**: on the open Decision Ticket or Design Artifact that invoked the prototype, add one comment beginning `Prototype Evidence:` with the question, human verdict, and stable throwaway-branch pointer. Prefer a remote branch or commit URL; without a remote, record the repository path, retained branch name, and full commit SHA. Do not copy the prototype into the tracker or production branch. If there is no owning open decision record, return this Evidence packet to the caller and leave the prototype phase incomplete until the human names one.
+
 ## When a skill says "publish to the issue tracker"
 
 Create a GitHub issue.

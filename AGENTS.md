@@ -1,8 +1,8 @@
 ## Agent skills
 
-### Issue tracker
+### Tracker Adapter
 
-Issues and PRDs are tracked in GitHub Issues. See `docs/agents/issue-tracker.md`.
+Tracker records use GitHub Issues. For semantic workflow operations, Research records, history rules, and PR mechanics, see `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
