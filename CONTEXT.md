@@ -4,9 +4,6 @@ This context defines the language used to move engineering work from initial ori
 
 ## Language
 
-**Reconnaissance**:
-A bounded orientation pass that identifies relevant surfaces, established facts, risks, and unknowns before classifying the work. It does not make design decisions.
-
 **Research Questions**:
 An objective query plan describing which existing behaviors and facts to investigate and where evidence may be found, without revealing the desired change.
 
@@ -27,6 +24,12 @@ A Wayfinder tracker index that guides a large, uncertain body of work toward a d
 
 **Decision Ticket**:
 A child tracker record of a Decision Map that owns one decision or investigation and its resolution. _Avoid_: unqualified "ticket" when the distinction from a Delivery Ticket matters.
+
+**RPI Workflow**:
+The Research, Plan, Implement workflow. It begins with human-invoked Research Questions and Research, then moves through approved design, Delivery Tickets, implementation, pull-request description, and review without a Decision Map.
+
+**Wayfinder Workflow**:
+The dynamic decision-mapping workflow for work that benefits from tracker-backed planning. Wayfinder gathers information while charting, delegates neutral Research Questions when needed, and creates as many Decision Tickets as the destination requires; task size does not determine whether it may be used.
 
 **Effort**:
 The continuous identity of one desired outcome from an initial tracker record or direct prompt through delivery. It is a composable lifecycle role embodied by the starting record or first durable tracker artifact, not a mandatory wrapper record.
@@ -62,7 +65,7 @@ A separate child tracker record containing a self-contained, source-free snapsho
 Research, prototype, test, or validation material that establishes facts supporting a decision or design. Evidence informs intent but does not own it.
 
 **Adaptive Ceremony**:
-A sizing principle that preserves authority boundaries while varying the number and depth of workflow steps and physical artifacts. Small, Medium, and Large work differ in ceremony, not in the meaning of their concerns.
+A sizing principle that preserves authority boundaries while varying the depth and number of artifacts within the RPI or Wayfinder Workflow. It does not define separate Small, Medium, and Large paths.
 
 **Tracker Adapter**:
 Repository-specific instructions in `docs/agents/issue-tracker.md` that map tracker-neutral workflow operations and semantic roles to a configured tracker. Setup creates the adapter; workflow skills reach it through a context pointer rather than embedding tracker-specific commands or field names.
